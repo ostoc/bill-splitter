@@ -1,10 +1,10 @@
 <template>
   <table>
     <tr>
-      <th v-for="header in tableData" :key="header.name" v-text="header.name"></th>
+      <th v-for="(header,index) in tableData" :key="index" v-text="header.name"></th>
     </tr>
     <tr>
-      <td v-for="item in tableData" :key="item.balance" v-text="item.balance"></td>
+      <td v-for="(item,index) in tableData" :key="index" v-text="item.balance"></td>
     </tr>
   </table>
 </template>
@@ -20,4 +20,16 @@ export default {
   }
 };
 </script>
+<style lang="css">
+table {
+  width: 100%;
+}
+th {
+  background: #ddd;
+}
+td {
+  border-bottom: 1px solid #888;
+}
+</style>
+
 

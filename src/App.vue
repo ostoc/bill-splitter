@@ -1,23 +1,37 @@
 <template>
   <div id="app">
-    <h2>Expense Records</h2>
-    <div>
-      <div v-for="(sharer, index) in sharers" :key="index">
-        <button @click="addSharer(sharer.name)">{{ sharer.name }}</button>
+    <h2>Sharers</h2>
+    <div class="sharer">
+      <div class v-for="(sharer,index) in sharers" :key="index">
+        <input v-model="sharer.name">
+        <span @click="removeRecord(sharers, sharer)">Delete</span>
       </div>
-      {{ selectedSharer }}
-      <label>Amount</label>
-      <input type="number" v-model="amount">
-      <button @click="addRecord">Add</button>
+      <button @click="addSharer()">ADD</button>
     </div>
-    <ul>
-      <li v-for="(record, index) in expenseRecords" :key="index">
-        {{ record.names }} {{ record.amount }}
-        <button
-          @click="removeRecord(expenseRecords,record)"
-        >Remove</button>
-      </li>
-    </ul>
+    <h2>Expense Records</h2>
+    <div class="expense">
+      <input type="number" v-model="amount" placeholder="Amount">
+      <button @click="addRecord">Add</button>
+      <div>Shared by</div>
+      <div v-for="(sharer, index) in sharers" :key="index">
+        <div
+          :class="sharerSelectorClass(sharer.name)"
+          @click="chooseSharer(sharer.name)"
+        >{{ sharer.name }}</div>
+      </div>
+      <div @click="selectAll()">Select All</div>
+      <div @click="removeAll()">Remove All</div>
+    </div>
+    <div class="expense-list">
+      <ul>
+        <li v-for="(record, index) in expenseRecords" :key="index">
+          {{ record.names }} {{ record.amount }}
+          <button
+            @click="removeRecord(expenseRecords,record)"
+          >Remove</button>
+        </li>
+      </ul>
+    </div>
 
     <IndividualExpanseTable :data="individualExpanse"/>
 
@@ -56,10 +70,13 @@ export default {
       payer: null,
       paidAmount: null,
       sharers: [
-        { name: "Alice", balance: 0 },
-        { name: "Bob", balance: 0 },
-        { name: "Caro", balance: 0 },
-        { name: "David", balance: 0 }
+        { name: "Ben", balance: 0 },
+        { name: "James", balance: 0 },
+        { name: "Justin", balance: 0 },
+        { name: "Junyu", balance: 0 },
+        { name: "Kevin", balance: 0 },
+        { name: "Kons", balance: 0 },
+        { name: "Flo", balance: 0 }
       ],
       expenseRecords: [],
       paidRecods: []
@@ -75,7 +92,7 @@ export default {
         const sharedAmount = record.amount / record.names.length;
         record.names.forEach(name => {
           let share = localBalance.find(item => item.name === name);
-          share.balance = share.balance + sharedAmount;
+          share.balance = parseFloat(share.balance) + parseFloat(sharedAmount);
         });
       });
       return localBalance;
@@ -94,6 +111,9 @@ export default {
   },
 
   methods: {
+    addSharer() {
+      this.sharers.push({ name: "Name", balance: 0 });
+    },
     addRecord() {
       const record = {
         names: [...this.selectedSharer],
@@ -119,7 +139,7 @@ export default {
       }
       this.paidRecods.push(record);
     },
-    addSharer(sharer) {
+    chooseSharer(sharer) {
       if (this.selectedSharer.includes(sharer)) {
         this.selectedSharer = this.selectedSharer.filter(
           selected => selected !== sharer
@@ -128,11 +148,30 @@ export default {
       }
       this.selectedSharer.push(sharer);
     },
-    cals() {
-      const dynamicBalanceBook = this.individualBalance.map(a =>
-        Object.assign([], a)
+    selectAll() {
+      this.selectedSharer = [];
+      this.sharers.forEach(sharer => {
+        this.selectedSharer.push(sharer.name);
+      });
+    },
+    removeAll() {
+      this.selectedSharer = [];
+    },
+    sharerSelectorClass(sharer) {
+      const isSelected = this.selectedSharer.find(
+        selected => selected === sharer
       );
-      for (let i = 0; i < dynamicBalanceBook.length - 1; i++) {
+      return {
+        "sharer-selector": true,
+        "sharer-selector--selected": isSelected
+      };
+    },
+    cals() {
+      this.transferBook = [];
+      const dynamicBalanceBook = JSON.parse(
+        JSON.stringify(this.individualBalance)
+      );
+      for (let i = 0; i < dynamicBalanceBook.length; i++) {
         this.cal(dynamicBalanceBook);
         if ([...dynamicBalanceBook].every(a => a.balance === 0)) {
           break;
@@ -163,3 +202,52 @@ export default {
   }
 };
 </script>
+
+<style>
+#app {
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-size: 16px;
+}
+.expense {
+  background: #ddd;
+  border: 1px solid #888;
+  display: flex;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+.sharer-selector {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  background: #999;
+  border-radius: 100%;
+  border: 1px solid #999;
+  align-items: center;
+  text-align: center;
+}
+.sharer-selector:hover {
+  cursor: pointer;
+}
+.sharer-selector--selected {
+  background: green;
+}
+button {
+  background: #3a740a;
+  height: 40px;
+  border: 0;
+  border-radius: 4px;
+  color: #fff;
+  min-width: 80px;
+}
+input {
+  height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+select {
+  height: 40px;
+  font-size: 16px;
+}
+</style>
