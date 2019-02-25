@@ -1,54 +1,50 @@
 <template>
   <div id="app">
-    <h1>Expense Record</h1>
+    <h2>Expense Records</h2>
     <div>
       <div v-for="(sharer, index) in sharers" :key="index">
         <button @click="addSharer(sharer.name)">{{ sharer.name }}</button>
       </div>
       {{ selectedSharer }}
       <label>Amount</label>
-      <input type="number" v-model="amount" />
+      <input type="number" v-model="amount">
       <button @click="addRecord">Add</button>
     </div>
-
-    {{ indivalBook }}
-
     <ul>
-      <li v-for="(record, index) in expensRecords" :key="index">
+      <li v-for="(record, index) in expenseRecords" :key="index">
         {{ record.names }} {{ record.amount }}
-        <button @click="removeRecord(record)">Remove</button>
+        <button
+          @click="removeRecord(expenseRecords,record)"
+        >Remove</button>
       </li>
     </ul>
-    {{ expensRecords }}
-    <H2>Payed</H2>
+
+    <IndividualExpanseTable :data="individualExpanse"/>
+
+    <H2>Paid Records</H2>
     <select v-model="payer">
-      <option
-        v-for="(sharer, index) in sharers"
-        :key="index"
-        :value="sharer.name"
-        >{{ sharer.name }}</option
-      >
+      <option v-for="(sharer, index) in sharers" :key="index" :value="sharer.name">{{ sharer.name }}</option>
     </select>
-    <input v-model="paidAmount" />
+    <input v-model="paidAmount">
     <button @click="addPayRecord">Add</button>
     <ul>
       <li v-for="(paid, index) in paidRecods" :key="index">
         {{ paid.name }} - {{ paid.amount }}
+        <button @click="removeRecord(paidRecods,paid)">Remove</button>
       </li>
     </ul>
 
     <ul>
-      <li v-for="(trans, index) in transferBook" :key="index">
-        {{ trans.to }} {{ trans.amount }}
-      </li>
+      <li v-for="(trans, index) in transferBook" :key="index">{{ trans.to }} {{ trans.amount }}</li>
     </ul>
-    {{ newBalance }}
-    <!-- {{ balanceFinnal }} -->
+
+    <IndividualExpanseTable :data="individualBalance"/>
     <button @click="cals">Cal</button>
   </div>
 </template>
 
 <script>
+import IndividualExpanseTable from "@/components/IndividualExpanseTable";
 export default {
   name: "app",
   data() {
@@ -65,57 +61,63 @@ export default {
         { name: "Caro", balance: 0 },
         { name: "David", balance: 0 }
       ],
-      expensRecords: [],
-      paidRecods: [],
-      balanceBook: [
-        {
-          name: "Alice",
-          balance: 0
-        },
-        {
-          name: "Bob",
-          balance: 0
-        },
-        {
-          name: "Caro",
-          balance: 0
-        },
-        {
-          name: "David",
-          balance: 0
-        }
-      ]
+      expenseRecords: [],
+      paidRecods: []
     };
   },
+  components: {
+    IndividualExpanseTable
+  },
   computed: {
-    newBalance() {
-      this.sharers.forEach(share => {
-        this.expensRecords.forEach(record => {
-          if (record.names.includes(share.name)) {
-            const sharedAmount = record.amount / record.names.length;
-            share.balance = share.balance + sharedAmount;
-          }
+    individualExpanse() {
+      let localBalance = JSON.parse(JSON.stringify(this.sharers));
+      this.expenseRecords.forEach(record => {
+        const sharedAmount = record.amount / record.names.length;
+        record.names.forEach(name => {
+          let share = localBalance.find(item => item.name === name);
+          share.balance = share.balance + sharedAmount;
         });
       });
-      return this.sharers;
+      return localBalance;
+    },
+    individualBalance() {
+      const localBalance = JSON.parse(JSON.stringify(this.individualExpanse));
+      localBalance.map(item => {
+        item.name, (item.balance = -parseFloat(item.balance));
+      });
+      this.paidRecods.forEach(record => {
+        let share = localBalance.find(item => item.name === record.name);
+        share.balance = parseFloat(share.balance) + parseFloat(record.amount);
+      });
+      return localBalance;
     }
   },
+
   methods: {
     addRecord() {
       const record = {
-        names: this.selectedSharer,
+        names: [...this.selectedSharer],
         amount: this.amount
       };
-      this.expensRecords.push(Object.create(record));
+      if (record.names.length === 0 || record.amount === null) {
+        alert("You need select person or have amout");
+        return;
+      }
+      this.expenseRecords.push(Object.create(record));
     },
-    removeRecord(record) {
-      this.expensRecords.splice(this.expensRecords.indexOf(record), 1);
+    removeRecord(list, record) {
+      list.splice(this.expenseRecords.indexOf(record), 1);
     },
     addPayRecord() {
-      this.paidRecods.push({
+      const record = {
         name: this.payer,
         amount: this.paidAmount
-      });
+      };
+      if (record.name === null || record.amount === null) {
+        alert("You need select person or have amout");
+        return;
+      }
+      this.paidRecods.push(record);
     },
     addSharer(sharer) {
       if (this.selectedSharer.includes(sharer)) {
@@ -127,10 +129,10 @@ export default {
       this.selectedSharer.push(sharer);
     },
     cals() {
-      const dynamicBalanceBook = this.balanceBook.map(a =>
+      const dynamicBalanceBook = this.individualBalance.map(a =>
         Object.assign([], a)
       );
-      for (let i = 0; i < this.balanceBook.length - 1; i++) {
+      for (let i = 0; i < dynamicBalanceBook.length - 1; i++) {
         this.cal(dynamicBalanceBook);
         if ([...dynamicBalanceBook].every(a => a.balance === 0)) {
           break;
