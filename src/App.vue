@@ -2,57 +2,68 @@
   <div id="app">
     <h2>Sharers</h2>
     <div class="sharer">
-      <div class v-for="(sharer,index) in sharers" :key="index">
-        <input v-model="sharer.name">
-        <span @click="removeRecord(sharers, sharer)">Delete</span>
+      <div class v-for="(sharer, index) in sharers" :key="index">
+        <span v-text="sharer" />
+        <span @click="removeSharer(sharer)">Delete</span>
       </div>
+      <input v-model="newSharer" />
       <button @click="addSharer()">ADD</button>
     </div>
     <h2>Expense Records</h2>
     <div class="expense">
-      <input type="number" v-model="amount" placeholder="Amount">
-      <button @click="addRecord">Add</button>
-      <div>Shared by</div>
-      <div v-for="(sharer, index) in sharers" :key="index">
-        <div
-          :class="sharerSelectorClass(sharer.name)"
-          @click="chooseSharer(sharer.name)"
-        >{{ sharer.name }}</div>
+      <div class="row">
+        <input type="number" v-model="amount" placeholder="Amount" />
+        <button @click="addRecord">Add</button>
       </div>
-      <div @click="selectAll()">Select All</div>
-      <div @click="removeAll()">Remove All</div>
+      <div class="row">
+        <div>Shared by</div>
+        <div @click="selectAll()">Select All</div>
+        <div @click="removeAll()">Remove All</div>
+      </div>
+      <div class="row">
+        <div v-for="(sharer, index) in sharers" :key="index">
+          <div
+            :class="sharerSelectorClass(sharer)"
+            @click="chooseSharer(sharer)"
+          >
+            {{ sharer.substring(0, 2) }}
+          </div>
+        </div>
+      </div>
     </div>
     <div class="expense-list">
       <ul>
         <li v-for="(record, index) in expenseRecords" :key="index">
           {{ record.names }} {{ record.amount }}
-          <button
-            @click="removeRecord(expenseRecords,record)"
-          >Remove</button>
+          <button @click="removeRecord(expenseRecords, record)">Remove</button>
         </li>
       </ul>
     </div>
 
-    <IndividualExpanseTable :data="individualExpanse"/>
+    <IndividualExpanseTable :data="individualExpanse" />
 
     <H2>Paid Records</H2>
     <select v-model="payer">
-      <option v-for="(sharer, index) in sharers" :key="index" :value="sharer.name">{{ sharer.name }}</option>
+      <option v-for="(sharer, index) in sharers" :key="index" :value="sharer">{{
+        sharer
+      }}</option>
     </select>
-    <input v-model="paidAmount">
+    <input v-model="paidAmount" />
     <button @click="addPayRecord">Add</button>
     <ul>
-      <li v-for="(paid, index) in paidRecods" :key="index">
+      <li v-for="(paid, index) in paidRecords" :key="index">
         {{ paid.name }} - {{ paid.amount }}
-        <button @click="removeRecord(paidRecods,paid)">Remove</button>
+        <button @click="removeRecord(paidRecords, paid)">Remove</button>
       </li>
     </ul>
 
     <ul>
-      <li v-for="(trans, index) in transferBook" :key="index">{{ trans.to }} {{ trans.amount }}</li>
+      <li v-for="(trans, index) in transferBook" :key="index">
+        {{ trans.to }} {{ trans.amount }}
+      </li>
     </ul>
 
-    <IndividualExpanseTable :data="individualBalance"/>
+    <IndividualExpanseTable :data="individualBalance" />
     <button @click="cals">Cal</button>
   </div>
 </template>
@@ -67,19 +78,12 @@ export default {
       selectedSharer: [],
       transferBook: [],
       recordTitle: null,
+      newSharer: null,
       payer: null,
       paidAmount: null,
-      sharers: [
-        { name: "Ben", balance: 0 },
-        { name: "James", balance: 0 },
-        { name: "Justin", balance: 0 },
-        { name: "Junyu", balance: 0 },
-        { name: "Kevin", balance: 0 },
-        { name: "Kons", balance: 0 },
-        { name: "Flo", balance: 0 }
-      ],
+      sharers: ["Ben", "James", "Justin", "Junyu"],
       expenseRecords: [],
-      paidRecods: []
+      paidRecords: []
     };
   },
   components: {
@@ -87,7 +91,10 @@ export default {
   },
   computed: {
     individualExpanse() {
-      let localBalance = JSON.parse(JSON.stringify(this.sharers));
+      let localBalance = [];
+      this.sharers.forEach(shareName => {
+        localBalance.push({ name: shareName, balance: 0 });
+      });
       this.expenseRecords.forEach(record => {
         const sharedAmount = record.amount / record.names.length;
         record.names.forEach(name => {
@@ -102,7 +109,7 @@ export default {
       localBalance.map(item => {
         item.name, (item.balance = -parseFloat(item.balance));
       });
-      this.paidRecods.forEach(record => {
+      this.paidRecords.forEach(record => {
         let share = localBalance.find(item => item.name === record.name);
         share.balance = parseFloat(share.balance) + parseFloat(record.amount);
       });
@@ -112,7 +119,16 @@ export default {
 
   methods: {
     addSharer() {
-      this.sharers.push({ name: "Name", balance: 0 });
+      this.sharers.push(this.newSharer);
+    },
+    removeSharer(sharer) {
+      this.sharers = this.sharers.filter(item => item !== sharer);
+      this.expenseRecords.forEach(record => {
+        record.names = record.names.filter(name => name !== sharer.name);
+      });
+      this.paidRecords = this.paidRecords.filter(record => {
+        record.name !== sharer.name;
+      });
     },
     addRecord() {
       const record = {
@@ -137,7 +153,7 @@ export default {
         alert("You need select person or have amout");
         return;
       }
-      this.paidRecods.push(record);
+      this.paidRecords.push(record);
     },
     chooseSharer(sharer) {
       if (this.selectedSharer.includes(sharer)) {
@@ -151,7 +167,7 @@ export default {
     selectAll() {
       this.selectedSharer = [];
       this.sharers.forEach(sharer => {
-        this.selectedSharer.push(sharer.name);
+        this.selectedSharer.push(sharer);
       });
     },
     removeAll() {
@@ -214,7 +230,11 @@ export default {
   display: flex;
   padding: 8px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  flex-direction: row;
 }
 .sharer-selector {
   height: 40px;
@@ -225,6 +245,8 @@ export default {
   border: 1px solid #999;
   align-items: center;
   text-align: center;
+  color: #fff;
+  text-transform: uppercase;
 }
 .sharer-selector:hover {
   cursor: pointer;
