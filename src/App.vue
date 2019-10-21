@@ -2,16 +2,20 @@
   <div id="app">
     <h2>Sharers</h2>
     <div class=" sharers">
-      <div class="row">
+      <div class="row mb-1">
         <div class=" sharer" v-for="(sharer, index) in sharers" :key="index">
           <span v-text="sharer" />
           <span @click="removeSharer(sharer)" class="sharer__delete-button"
-            >✖︎</span
+            >X</span
           >
         </div>
       </div>
-      <div class="row">
-        <input v-model="newSharer" style="flex:2 1" />
+      <div class="row mb-1">
+        <input
+          v-model="newSharer"
+          style="flex:4 1"
+          placeholder="New share's name"
+        />
         <button @click="addSharer()" style="flex:1 1">ADD</button>
       </div>
     </div>
@@ -27,8 +31,8 @@
       </div>
       <div class="row">
         <div>Shared by</div>
-        <div @click="selectAll()">Select All</div>
-        <div @click="removeAll()">Remove All</div>
+        <button @click="selectAll()">Select All</button>
+        <button @click="removeAll()">Remove All</button>
       </div>
       <div class="row">
         <div v-for="(sharer, index) in sharers" :key="index">

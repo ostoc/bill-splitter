@@ -34,20 +34,4 @@ export default {
   }
 };
 </script>
-<style lang="css">
-table {
-  margin: 8px 0;
-  width: 100%;
-  border-spacing: 0;
-}
-th {
-  background: #ddd;
-}
-td {
-  border: 0;
-  border-bottom: 1px solid #888;
-}
-span {
-  padding: 8px;
-}
-</style>
+<style lang="css"></style>
