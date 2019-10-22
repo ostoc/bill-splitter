@@ -229,8 +229,8 @@ export default {
         alert("You need select person or have amout");
         return;
       }
-      this.saveData();
       this.paidRecords.push(record);
+      this.saveData();
       this.payer = "";
       this.paidAmount = "";
     },
