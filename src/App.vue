@@ -211,8 +211,8 @@ export default {
         alert("You need select person or have amout");
         return;
       }
-      this.saveData();
       this.expenseRecords.push(record);
+      this.saveData();
       this.recordTitle = "";
       this.amount = "";
     },
