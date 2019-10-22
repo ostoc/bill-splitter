@@ -17,6 +17,7 @@
           v-model="newSharer"
           style="flex:5 1"
           placeholder="New share's name"
+          @keyup.enter="addSharer()"
         />
         <button
           class="ml-1"
@@ -39,10 +40,19 @@
           v-model="amount"
           placeholder="Amount"
         />
+        <select v-model="paidBy" class="ml-1" style="flex: 2 1">
+          <option value="" disabled selected>Selecte paid by</option>
+          <option
+            v-for="(sharer, index) in sharers"
+            :key="index"
+            :value="sharer"
+            v-text="sharer"
+          />
+        </select>
         <button
           style="flex: 1 1"
           class="ml-1"
-          :disabled="!amount"
+          :disabled="!amount || !recordTitle || paidBy === ''"
           @click="addRecord"
           v-text="'Add'"
         />
@@ -65,38 +75,11 @@
       </div>
     </div>
 
-    <ExpanseTable :tableData="expenseRecords" @delete="deleteExpenseRecord" />
-    <!-- <h2>Indiviadual Spend</h2>
-    <IndividualExpanseTable :data="individualExpanse" /> -->
-
-    <H2>Paid Records</H2>
-    <div class="row">
-      <select v-model="payer" style="flex: 2 1">
-        <option value="" disabled selected>Payed by</option>
-        <option
-          v-for="(sharer, index) in sharers"
-          :key="index"
-          :value="sharer"
-          v-text="sharer"
-        />
-      </select>
-
-      <input
-        class="ml-1"
-        v-model="paidAmount"
-        style="flex: 1 1"
-        type="number"
-        placeholder="Amount"
-      />
-      <button
-        class="ml-1"
-        style="flex: 1 1"
-        :disabled="!paidAmount || payer === ''"
-        @click="addPayRecord"
-        v-text="'Add'"
-      />
-    </div>
-    <PaidTable :tableData="paidRecords" @delete="removeRecord"></PaidTable>
+    <ExpanseTable
+      :tableData="expenseRecords"
+      @delete="deleteExpenseRecord"
+      @deleteAll="deleteAllExpenseRecord"
+    />
 
     <button class="calculation" @click="cals">Calulate Shared Bill</button>
     <TransferTable :tableData="transferBook"></TransferTable>
@@ -106,13 +89,8 @@
 
 <script>
 import ExpanseTable from "@/components/ExpenseTable";
-import PaidTable from "@/components/PaidTable";
 import TransferTable from "@/components/TransferTable";
-import {
-  calulationDiffer,
-  totalAmount,
-  getLocalStorage
-} from "@/components/util";
+import { calulationDiffer, getLocalStorage } from "@/components/util";
 export default {
   name: "app",
   data() {
@@ -122,16 +100,13 @@ export default {
       transferBook: [],
       recordTitle: null,
       newSharer: null,
-      payer: "",
-      paidAmount: null,
+      paidBy: "",
       sharers: [],
-      expenseRecords: [],
-      paidRecords: []
+      expenseRecords: []
     };
   },
   components: {
     ExpanseTable,
-    PaidTable,
     TransferTable
   },
   computed: {
@@ -154,8 +129,8 @@ export default {
       localBalance.map(item => {
         item.name, (item.balance = -parseFloat(item.balance));
       });
-      this.paidRecords.forEach(record => {
-        let share = localBalance.find(item => item.name === record.name);
+      this.expenseRecords.forEach(record => {
+        let share = localBalance.find(item => item.name === record.paidBy);
         share.balance = parseFloat(share.balance) + parseFloat(record.amount);
       });
       return localBalance;
@@ -165,7 +140,6 @@ export default {
   methods: {
     clearData() {
       this.sharers.length = 0;
-      this.paidRecords.length = 0;
       this.expenseRecords = 0;
       localStorage.clear();
     },
@@ -175,7 +149,6 @@ export default {
         "expenseRecords",
         JSON.stringify(this.expenseRecords)
       );
-      localStorage.setItem("paidRecords", JSON.stringify(this.paidRecords));
     },
     addSharer() {
       if (this.sharers.includes(this.newSharer)) {
@@ -190,11 +163,11 @@ export default {
       this.sharers = this.sharers.filter(item => item !== sharer);
       this.selectedSharer = this.selectedSharer.filter(item => item !== sharer);
       this.expenseRecords.forEach(record => {
-        record.names = record.names.filter(name => name !== sharer.name);
+        record.names = record.names.filter(name => name !== sharer);
       });
-      this.paidRecords = this.paidRecords.filter(record => {
-        record.name !== sharer.name;
-      });
+      this.expenseRecords = this.expenseRecords.filter(
+        item => item.paidBy !== sharer
+      );
       this.saveData();
     },
     deleteExpenseRecord(index) {
@@ -205,7 +178,8 @@ export default {
       let record = {
         title: this.recordTitle,
         names: [...this.selectedSharer],
-        amount: this.amount
+        amount: this.amount,
+        paidBy: this.paidBy
       };
       if (record.names.length === 0 || record.amount === null) {
         alert("You need select person or have amout");
@@ -215,24 +189,6 @@ export default {
       this.saveData();
       this.recordTitle = "";
       this.amount = "";
-    },
-    removeRecord(index) {
-      this.paidRecords.splice(index, 1);
-      this.saveData();
-    },
-    addPayRecord() {
-      const record = {
-        name: this.payer,
-        amount: this.paidAmount
-      };
-      if (record.name === null || record.amount === null) {
-        alert("You need select person or have amout");
-        return;
-      }
-      this.paidRecords.push(record);
-      this.saveData();
-      this.payer = "";
-      this.paidAmount = "";
     },
     chooseSharer(sharer) {
       if (this.selectedSharer.includes(sharer)) {
@@ -252,6 +208,10 @@ export default {
     removeAll() {
       this.selectedSharer = [];
     },
+    deleteAllExpenseRecord() {
+      this.expenseRecords = [];
+      this.saveData();
+    },
     sharerSelectorClass(sharer) {
       const isSelected = this.selectedSharer.find(
         selected => selected === sharer
@@ -262,12 +222,6 @@ export default {
       };
     },
     cals() {
-      const spendTotal = totalAmount(this.expenseRecords);
-      const paidTotal = totalAmount(this.paidRecords);
-      if (spendTotal !== paidTotal) {
-        alert("Your spend and paid are not the same");
-        return;
-      }
       this.transferBook = [];
       const dynamicBalanceBook = JSON.parse(
         JSON.stringify(this.individualBalance)
@@ -287,7 +241,6 @@ export default {
     this.sharers = getLocalStorage("sharers");
     this.selectedSharer = getLocalStorage("sharers");
     this.expenseRecords = getLocalStorage("expenseRecords");
-    this.paidRecords = getLocalStorage("paidRecords");
   }
 };
 </script>

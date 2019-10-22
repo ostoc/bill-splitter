@@ -31,12 +31,12 @@ export default {
 
 <style scoped>
 .transfer-book {
-  padding: 24px;
   background: #ffdddd;
 }
 .no-data {
   text-align: center;
   color: #888;
+  height: 4rem;
 }
 strong {
   font-size: 1.1rem;
