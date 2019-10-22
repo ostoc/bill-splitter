@@ -1,15 +1,11 @@
 <template>
   <div id="app">
     <h2>Sharers</h2>
-    <div class=" sharers">
+    <div class="sharers">
       <div class="row mb-1">
-        <div class=" sharer" v-for="(sharer, index) in sharers" :key="index">
+        <div class="sharer" v-for="(sharer, index) in sharers" :key="index">
           <span v-text="sharer" />
-          <span
-            @click="removeSharer(sharer)"
-            class="sharer__delete-button"
-            v-text="'x'"
-          />
+          <span @click="removeSharer(sharer)" class="sharer__delete-button" v-text="'x'" />
         </div>
       </div>
       <div class="row mb-1">
@@ -33,21 +29,10 @@
     <div class="expense">
       <div class="row mb-1">
         <input v-model="recordTitle" placeholder="Title" style="flex: 2 1" />
-        <input
-          style="flex: 1 1"
-          class="ml-1"
-          type="number"
-          v-model="amount"
-          placeholder="Amount"
-        />
+        <input style="flex: 1 1" class="ml-1" type="number" v-model="amount" placeholder="Amount" />
         <select v-model="paidBy" class="ml-1" style="flex: 2 1">
-          <option value="" disabled selected>Selecte paid by</option>
-          <option
-            v-for="(sharer, index) in sharers"
-            :key="index"
-            :value="sharer"
-            v-text="sharer"
-          />
+          <option value disabled selected>Selecte paid by</option>
+          <option v-for="(sharer, index) in sharers" :key="index" :value="sharer" v-text="sharer" />
         </select>
         <button
           style="flex: 1 1"
@@ -81,9 +66,12 @@
       @deleteAll="deleteAllExpenseRecord"
     />
 
-    <button class="calculation" @click="cals">Calulate Shared Bill</button>
+    <button class="calculation" @click="cals">Split Bill</button>
     <TransferTable :tableData="transferBook"></TransferTable>
-    <button class="secondary" @click="clearData">Clear All Data</button>
+    <div class="row">
+      <button class="secondary" @click="clearData">Clear All Data</button>
+      <button class="secondary ml-1" @click="redirectToGitHub">GitHub</button>
+    </div>
   </div>
 </template>
 
@@ -142,6 +130,7 @@ export default {
       this.sharers = [];
       this.expenseRecords = [];
       this.transferBook = [];
+      this.selectedSharer = [];
       localStorage.clear();
     },
     saveData() {
@@ -157,6 +146,7 @@ export default {
         return;
       }
       this.sharers.push(this.newSharer);
+      this.selectedSharer.push(this.newSharer);
       this.saveData();
       this.newSharer = null;
     },
@@ -236,6 +226,9 @@ export default {
           break;
         }
       }
+    },
+    redirectToGitHub() {
+      window.open("https://github.com/ostoc/bill-splitter");
     }
   },
   created() {

@@ -10,10 +10,12 @@ html {
   font-size: 14px;
   margin: 0 auto;
 }
+
 #app {
   margin: 0 auto;
   max-width: 720px;
 }
+
 h2 {
   font-weight: bolder;
   margin: 3rem 0 0.5rem 0;
@@ -22,6 +24,7 @@ h2 {
 .mb-1 {
   margin-bottom: 0.5rem;
 }
+
 .ml-1 {
   margin-left: 0.5rem;
 }
@@ -32,6 +35,7 @@ h2 {
   align-content: center;
   flex-wrap: wrap;
 }
+
 .sharer {
   font-size: 1rem;
   line-height: 1rem;
@@ -43,15 +47,18 @@ h2 {
   border: 2px solid #000;
   margin: 4px 4px 0 0;
 }
+
 .sharer .sharer__delete-button {
   margin-left: 0.4rem;
   padding: 0.5rem;
   text-align: center;
 }
+
 .sharer .sharer__delete-button:hover {
   cursor: pointer;
   background: #ddd;
 }
+
 .sharer-selector {
   width: 4rem;
   margin: 0.5rem 0.5rem 0 0;
@@ -61,17 +68,21 @@ h2 {
   text-align: center;
   text-transform: uppercase;
 }
+
 .sharer-selector:hover {
   cursor: pointer;
 }
+
 .sharer-selector--selected {
   background: var(--secondar-color);
   color: #fff;
   box-shadow: 2px 2px 0 0 var(--primary-color);
 }
+
 .sharer-selector--selected::before {
   content: "√ ";
 }
+
 button {
   background: var(--primary-color);
   border: 0;
@@ -81,12 +92,15 @@ button {
   font-size: 13px;
   font-family: var(--default-font);
 }
+
 button:hover {
   cursor: pointer;
 }
+
 button:disabled {
   background: var(--disabled-color);
 }
+
 button.secondary {
   padding: 0;
   height: 2rem;
@@ -95,15 +109,18 @@ button.secondary {
   margin-bottom: 2px;
   border-bottom: 2px dotted #000;
 }
+
 button.calculation {
   width: 100%;
   height: 3rem;
   background: var(--primary-color);
 }
+
 input {
   appearance: none;
   width: 100%;
   -webkit-appearance: none;
+  border-radius: 0;
   font-family: var(--default-font);
   font-size: 1rem;
   height: 2.4rem;
@@ -111,6 +128,7 @@ input {
   border: 2px solid #000;
   padding-left: 0.8rem;
 }
+
 select {
   font-family: var(--default-font);
   appearance: none;
@@ -131,11 +149,13 @@ table {
   width: 100%;
   border-spacing: 0;
 }
+
 th {
   padding: 0.5rem 0;
   text-align: left;
   border-bottom: 2px solid #000;
 }
+
 td {
   line-height: 1.5rem;
   word-wrap: break-word;
@@ -143,11 +163,13 @@ td {
   padding: 0.5rem 0;
   border-bottom: 1px solid #000;
 }
+
 td.total {
   line-height: 2rem;
   font-size: 1.1rem;
   font-weight: 600;
 }
+
 .shares-control {
   margin: 0.5rem 0;
   display: flex;
