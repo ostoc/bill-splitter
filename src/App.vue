@@ -13,71 +13,100 @@
       <div class="row mb-1">
         <input
           v-model="newSharer"
-          style="flex:4 1"
+          style="flex:5 1"
           placeholder="New share's name"
         />
-        <button @click="addSharer()" style="flex:1 1">ADD</button>
+        <button
+          class="ml-1"
+          @click="addSharer()"
+          :disabled="!newSharer"
+          style="flex:1 1"
+        >
+          ADD
+        </button>
       </div>
     </div>
 
     <h2>Expense Records</h2>
     <div class="expense">
-      <div>
-        <div class="row">
-          <input v-model="recordTitle" placeholder="Title" style="flex: 1 1" />
-        </div>
-        <input type="number" v-model="amount" placeholder="Amount" />
-        <button @click="addRecord">Add</button>
-      </div>
-      <div class="row">
-        <div>Shared by</div>
-        <button @click="selectAll()">Select All</button>
-        <button @click="removeAll()">Remove All</button>
+      <div class="row mb-1">
+        <input v-model="recordTitle" placeholder="Title" style="flex: 2 1" />
+        <input
+          style="flex: 1 1"
+          class="ml-1"
+          type="number"
+          v-model="amount"
+          placeholder="Amount"
+        />
+        <button
+          style="flex: 1 1"
+          class="ml-1"
+          :disabled="!amount"
+          @click="addRecord"
+          v-text="'Add'"
+        />
       </div>
       <div class="row">
         <div v-for="(sharer, index) in sharers" :key="index">
           <div
             :class="sharerSelectorClass(sharer)"
             @click="chooseSharer(sharer)"
-          >
-            {{ sharer.substring(0, 2) }}
-          </div>
+            v-text="sharer.substring(0, 3)"
+          />
+        </div>
+      </div>
+      <div class="shares-control" style="justify-content: space-between">
+        <div>Shared by {{ selectedSharer.length }} person</div>
+        <div>
+          <button class="secondary ml-1" @click="selectAll">Select All</button>
+          <button class="secondary ml-1" @click="removeAll">Remove All</button>
         </div>
       </div>
     </div>
-    <ExpanseTable :tableData="expenseRecords" />
 
-    <IndividualExpanseTable :data="individualExpanse" />
+    <ExpanseTable :tableData="expenseRecords" @delete="deleteExpenseRecord" />
+    <!-- <h2>Indiviadual Spend</h2>
+    <IndividualExpanseTable :data="individualExpanse" /> -->
 
     <H2>Paid Records</H2>
-    <select v-model="payer">
-      <option v-for="(sharer, index) in sharers" :key="index" :value="sharer">{{
-        sharer
-      }}</option>
-    </select>
-    <input v-model="paidAmount" />
-    <button @click="addPayRecord">Add</button>
-    <ul>
-      <li v-for="(paid, index) in paidRecords" :key="index">
-        {{ paid.name }} - {{ paid.amount }}
-        <button @click="removeRecord(paidRecords, paid)">Remove</button>
-      </li>
-    </ul>
+    <div class="row">
+      <select v-model="payer" style="flex: 2 1">
+        <option value="" disabled selected>Payed by</option>
+        <option
+          v-for="(sharer, index) in sharers"
+          :key="index"
+          :value="sharer"
+          v-text="sharer"
+        />
+      </select>
 
-    <ul>
-      <li v-for="(trans, index) in transferBook" :key="index">
-        {{ trans.to }} {{ trans.amount }}
-      </li>
-    </ul>
+      <input
+        class="ml-1"
+        v-model="paidAmount"
+        style="flex: 1 1"
+        type="number"
+        placeholder="Amount"
+      />
+      <button
+        class="ml-1"
+        style="flex: 1 1"
+        :disabled="!paidAmount || payer === ''"
+        @click="addPayRecord"
+        v-text="'Add'"
+      />
+    </div>
+    <PaidTable :tableData="paidRecords" @delete="removeRecord"></PaidTable>
 
-    <IndividualExpanseTable :data="individualBalance" />
-    <button @click="cals">Cal</button>
+    <button class="calculation" @click="cals">Calulate Shared Bill</button>
+    <TransferTable :tableData="transferBook"></TransferTable>
   </div>
 </template>
 
 <script>
-import IndividualExpanseTable from "@/components/IndividualExpanseTable";
 import ExpanseTable from "@/components/ExpenseTable";
+import PaidTable from "@/components/PaidTable";
+import TransferTable from "@/components/TransferTable";
+import { calulationDiffer, totalAmount } from "@/components/util";
 export default {
   name: "app",
   data() {
@@ -87,7 +116,7 @@ export default {
       transferBook: [],
       recordTitle: null,
       newSharer: null,
-      payer: null,
+      payer: "",
       paidAmount: null,
       sharers: ["Ben", "James", "Justin", "Junyu"],
       expenseRecords: [],
@@ -95,8 +124,9 @@ export default {
     };
   },
   components: {
-    IndividualExpanseTable,
-    ExpanseTable
+    ExpanseTable,
+    PaidTable,
+    TransferTable
   },
   computed: {
     individualExpanse() {
@@ -129,9 +159,11 @@ export default {
   methods: {
     addSharer() {
       this.sharers.push(this.newSharer);
+      this.newSharer = null;
     },
     removeSharer(sharer) {
       this.sharers = this.sharers.filter(item => item !== sharer);
+      this.selectedSharer = this.selectedSharer.filter(item => item !== sharer);
       this.expenseRecords.forEach(record => {
         record.names = record.names.filter(name => name !== sharer.name);
       });
@@ -139,8 +171,11 @@ export default {
         record.name !== sharer.name;
       });
     },
+    deleteExpenseRecord(index) {
+      return this.expenseRecords.splice(index, 1);
+    },
     addRecord() {
-      const record = {
+      let record = {
         title: this.recordTitle,
         names: [...this.selectedSharer],
         amount: this.amount
@@ -150,9 +185,11 @@ export default {
         return;
       }
       this.expenseRecords.push(Object.create(record));
+      this.recordTitle = "";
+      this.amount = "";
     },
-    removeRecord(list, record) {
-      list.splice(this.expenseRecords.indexOf(record), 1);
+    removeRecord(index) {
+      this.paidRecords.splice(index, 1);
     },
     addPayRecord() {
       const record = {
@@ -164,6 +201,8 @@ export default {
         return;
       }
       this.paidRecords.push(record);
+      this.payer = "";
+      this.paidAmount = "";
     },
     chooseSharer(sharer) {
       if (this.selectedSharer.includes(sharer)) {
@@ -193,38 +232,29 @@ export default {
       };
     },
     cals() {
+      const spendTotal = totalAmount(this.expenseRecords);
+      const paidTotal = totalAmount(this.paidRecords);
+      if (spendTotal !== paidTotal) {
+        alert("Your spend and paid are not the same");
+        return;
+      }
       this.transferBook = [];
       const dynamicBalanceBook = JSON.parse(
         JSON.stringify(this.individualBalance)
       );
       for (let i = 0; i < dynamicBalanceBook.length; i++) {
-        this.cal(dynamicBalanceBook);
+        let record = calulationDiffer(dynamicBalanceBook);
+        if (record.amount >= 0.01) {
+          this.transferBook.push(record);
+        }
         if ([...dynamicBalanceBook].every(a => a.balance === 0)) {
           break;
         }
       }
-    },
-    cal(book) {
-      const max = book.reduce(function(prev, current) {
-        return prev.balance > current.balance ? prev : current;
-      });
-      const min = book.reduce(function(prev, current) {
-        return prev.balance < current.balance ? prev : current;
-      });
-      const detal = max.balance + min.balance;
-      const amount = Math.abs(Math.min(max.balance, min.balance));
-      if (detal > 0) {
-        max.balance = detal;
-        min.balance = 0;
-      } else {
-        min.balance = detal;
-        max.balance = 0;
-      }
-      this.transferBook.push({
-        amount: amount,
-        to: `${min.name} => ${max.name}`
-      });
     }
+  },
+  created() {
+    this.selectedSharer = [...this.sharers];
   }
 };
 </script>

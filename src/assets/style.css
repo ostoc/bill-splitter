@@ -1,6 +1,7 @@
 :root {
   --primary-color: #090057;
   --secondar-color: #ffa069;
+  --disabled-color: #fadce5;
   --default-font: "IBM Plex Mono", monospace;
 }
 
@@ -10,43 +11,44 @@ html {
   margin: 0 auto;
   padding: 24px;
 }
-
+#app {
+  margin: 0 auto;
+  max-width: 640px;
+}
 h2 {
+  font-weight: bolder;
   line-height: 1.5;
 }
 
 .mb-1 {
   margin-bottom: 0.5rem;
 }
+.ml-1 {
+  margin-left: 0.5rem;
+}
 
 .row {
   display: flex;
   flex-direction: row;
+  align-content: center;
   flex-wrap: wrap;
 }
-.sharers,
-.expense {
-  border-bottom: 1px solid #fadce5;
-}
 .sharer {
-  border-radius: 2px;
-  font-size: 14px;
-  padding: 2px;
+  font-size: 1rem;
+  line-height: 1rem;
   font-weight: 600;
   display: flex;
   align-content: center;
   width: auto;
   border: 2px solid #000;
-  margin-right: 4px;
+  margin: 4px 4px 0 0;
 }
 .sharer .sharer__delete-button {
-  color: #d8255b;
   margin-left: 8px;
   text-align: center;
 }
 .sharer .sharer__delete-button:hover {
   cursor: pointer;
-  border-radius: 2px;
   background: #ddd;
 }
 .sharer-selector {
@@ -67,29 +69,58 @@ h2 {
   box-shadow: 2px 2px 0 0 var(--primary-color);
 }
 .sharer-selector--selected::before {
-  content: "√";
+  content: "√ ";
 }
 button {
   background: var(--primary-color);
   border: 0;
-  min-height: 2rem;
-  border-radius: 2px;
+  height: 2.4rem;
+  min-width: 6rem;
   color: #fff;
   font-size: 13px;
   font-family: var(--default-font);
 }
+button:hover {
+  cursor: pointer;
+}
+button:disabled {
+  background: var(--disabled-color);
+}
+button.secondary {
+  padding: 0;
+  height: 2rem;
+  background: transparent;
+  color: #000;
+  margin-bottom: 2px;
+  border-bottom: 2px dotted #000;
+}
+button.calculation {
+  width: 100%;
+  height: 3rem;
+  background: var(--primary-color);
+}
 input {
+  appearance: none;
+  width: 100%;
+  -webkit-appearance: none;
   font-family: var(--default-font);
   font-size: 1rem;
-  border-radius: 2px;
-  height: 2rem;
-  font-size: 14px;
+  height: 2.4rem;
+  box-sizing: border-box;
   border: 2px solid #000;
   padding-left: 16px;
 }
 select {
-  height: 40px;
-  font-size: 16px;
+  font-family: var(--default-font);
+  appearance: none;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  border-radius: 0;
+  height: 2.4rem;
+  font-size: 1rem;
+  width: 100%;
+  border: 2px solid #000;
+  padding: 0 0.5rem;
 }
 
 table {
@@ -98,15 +129,27 @@ table {
   border-spacing: 0;
 }
 th {
-  height: 32px;
-  padding: 4px;
+  height: 2.4rem;
+  padding: 4px 0;
   text-align: left;
+  border-bottom: 2px solid #000;
 }
 td {
-  height: 40px;
+  height: 2.4rem;
   border: 0;
-  border-bottom: 1px solid #fadce5;
+  border-bottom: 1px solid #000;
+}
+td.total {
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 span {
   padding: 8px;
+}
+
+.shares-control {
+  margin: 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

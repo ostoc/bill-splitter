@@ -1,23 +1,19 @@
 <template>
   <table>
     <tr>
-      <th width="30%">Title</th>
-      <th width="40%">Shared By</th>
-      <th width="15%">Amount</th>
-      <th width="15%">Action</th>
+      <th width="60%">Paid by</th>
+      <th width="20%">Amount</th>
+      <th width="20%">Action</th>
     </tr>
     <tr v-for="(data, index) in tableData" :key="index">
-      <td class="title">{{ data.title }}</td>
-      <td>
-        <span v-for="name in data.names" :key="name">{{ name }}</span>
-      </td>
-      <td>{{ data.amount }}</td>
+      <td v-text="data.name" />
+      <td v-text="data.amount" />
       <td>
         <button class="secondary" @click="deleteData(index)">Delete</button>
       </td>
     </tr>
     <tr>
-      <td colspan="4" class="total">Total Spend: {{ spendTotal }}</td>
+      <td colspan="4" class="total">Total Paid: {{ paidTotal }}</td>
     </tr>
   </table>
 </template>
@@ -28,7 +24,7 @@ export default {
   name: "ExpenseTable",
   props: ["tableData"],
   computed: {
-    spendTotal() {
+    paidTotal() {
       return totalAmount(this.tableData);
     }
   },
@@ -39,10 +35,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.title {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-</style>

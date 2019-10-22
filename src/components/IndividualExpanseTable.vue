@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import formatCurrency from "./util.js";
+import { formatCurrency } from "./util.js";
 export default {
   name: "IndividualExpanseTable",
   props: ["data"],
