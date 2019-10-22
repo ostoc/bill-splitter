@@ -5,9 +5,11 @@
       <div class="row mb-1">
         <div class=" sharer" v-for="(sharer, index) in sharers" :key="index">
           <span v-text="sharer" />
-          <span @click="removeSharer(sharer)" class="sharer__delete-button"
-            >X</span
-          >
+          <span
+            @click="removeSharer(sharer)"
+            class="sharer__delete-button"
+            v-text="'x'"
+          />
         </div>
       </div>
       <div class="row mb-1">
@@ -21,9 +23,8 @@
           @click="addSharer()"
           :disabled="!newSharer"
           style="flex:1 1"
-        >
-          ADD
-        </button>
+          v-text="'Add'"
+        />
       </div>
     </div>
 
@@ -99,6 +100,7 @@
 
     <button class="calculation" @click="cals">Calulate Shared Bill</button>
     <TransferTable :tableData="transferBook"></TransferTable>
+    <button class="secondary" @click="clearData">Clear All Data</button>
   </div>
 </template>
 
@@ -106,7 +108,11 @@
 import ExpanseTable from "@/components/ExpenseTable";
 import PaidTable from "@/components/PaidTable";
 import TransferTable from "@/components/TransferTable";
-import { calulationDiffer, totalAmount } from "@/components/util";
+import {
+  calulationDiffer,
+  totalAmount,
+  getLocalStorage
+} from "@/components/util";
 export default {
   name: "app",
   data() {
@@ -118,7 +124,7 @@ export default {
       newSharer: null,
       payer: "",
       paidAmount: null,
-      sharers: ["Ben", "James", "Justin", "Junyu"],
+      sharers: [],
       expenseRecords: [],
       paidRecords: []
     };
@@ -157,8 +163,27 @@ export default {
   },
 
   methods: {
+    clearData() {
+      this.sharers.length = 0;
+      this.paidRecords.length = 0;
+      this.expenseRecords = 0;
+      localStorage.clear();
+    },
+    saveData() {
+      localStorage.setItem("sharers", JSON.stringify(this.sharers));
+      localStorage.setItem(
+        "expenseRecords",
+        JSON.stringify(this.expenseRecords)
+      );
+      localStorage.setItem("paidRecords", JSON.stringify(this.paidRecords));
+    },
     addSharer() {
+      if (this.sharers.includes(this.newSharer)) {
+        alert(`${this.newSharer} is already in the list`);
+        return;
+      }
       this.sharers.push(this.newSharer);
+      this.saveData();
       this.newSharer = null;
     },
     removeSharer(sharer) {
@@ -170,9 +195,11 @@ export default {
       this.paidRecords = this.paidRecords.filter(record => {
         record.name !== sharer.name;
       });
+      this.saveData();
     },
     deleteExpenseRecord(index) {
-      return this.expenseRecords.splice(index, 1);
+      this.expenseRecords.splice(index, 1);
+      this.saveData();
     },
     addRecord() {
       let record = {
@@ -184,12 +211,14 @@ export default {
         alert("You need select person or have amout");
         return;
       }
-      this.expenseRecords.push(Object.create(record));
+      this.saveData();
+      this.expenseRecords.push(record);
       this.recordTitle = "";
       this.amount = "";
     },
     removeRecord(index) {
       this.paidRecords.splice(index, 1);
+      this.saveData();
     },
     addPayRecord() {
       const record = {
@@ -200,6 +229,7 @@ export default {
         alert("You need select person or have amout");
         return;
       }
+      this.saveData();
       this.paidRecords.push(record);
       this.payer = "";
       this.paidAmount = "";
@@ -254,7 +284,10 @@ export default {
     }
   },
   created() {
-    this.selectedSharer = [...this.sharers];
+    this.sharers = getLocalStorage("sharers");
+    this.selectedSharer = getLocalStorage("sharers");
+    this.expenseRecords = getLocalStorage("expenseRecords");
+    this.paidRecords = getLocalStorage("paidRecords");
   }
 };
 </script>

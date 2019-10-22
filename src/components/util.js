@@ -27,6 +27,10 @@ export function calulationDiffer(book) {
   };
 }
 
+export function getLocalStorage(key) {
+  return localStorage.getItem(key) ? JSON.parse(localStorage.getItem(key)) : [];
+}
+
 export function totalAmount(records) {
   let total = 0;
   records.forEach(record => {

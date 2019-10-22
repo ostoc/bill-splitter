@@ -17,7 +17,7 @@ html {
 }
 h2 {
   font-weight: bolder;
-  line-height: 1.5;
+  margin: 3rem 0 0.5rem 0;
 }
 
 .mb-1 {
@@ -108,7 +108,7 @@ input {
   height: 2.4rem;
   box-sizing: border-box;
   border: 2px solid #000;
-  padding-left: 16px;
+  padding-left: 0.8rem;
 }
 select {
   font-family: var(--default-font);
@@ -120,7 +120,7 @@ select {
   font-size: 1rem;
   width: 100%;
   border: 2px solid #000;
-  padding: 0 0.5rem;
+  padding-left: 0.8rem;
 }
 
 table {
