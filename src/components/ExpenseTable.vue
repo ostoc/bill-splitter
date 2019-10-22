@@ -4,8 +4,8 @@
       <th width="30%">Title</th>
       <th width="40%">Shared By</th>
       <th width="20%">Paid by</th>
-      <th width="10%">Amount</th>
-      <th width="80px">Action</th>
+      <th width="15%">Amount</th>
+      <th width="80px" class="action">Action</th>
     </tr>
     <tr v-for="(data, index) in tableData" :key="index">
       <td class="title">{{ data.title }}</td>
@@ -16,14 +16,16 @@
         </span>
       </td>
       <td>{{ data.paidBy }}</td>
-      <td>{{ data.amount }}</td>
-      <td>
+      <td>{{ formatedAmount(data.amount) }}</td>
+      <td class="action">
         <button class="secondary" @click="deleteRow(index)">Delete</button>
       </td>
     </tr>
     <tr>
-      <td colspan="4" class="total">Total Spend: {{ spendTotal }}</td>
-      <td colspan="1" class="action">
+      <td colspan="3" class="total">
+        Total Spend: {{ formatedAmount(spendTotal) }}
+      </td>
+      <td colspan="2" class="action">
         <button
           v-if="tableData.length"
           class="secondary"
@@ -36,7 +38,7 @@
 </template>
 
 <script>
-import { totalAmount } from "@/components/util";
+import { totalAmount, formatCurrency } from "@/components/util";
 export default {
   name: "ExpenseTable",
   props: ["tableData"],
@@ -46,6 +48,9 @@ export default {
     }
   },
   methods: {
+    formatedAmount(amount) {
+      return formatCurrency(amount);
+    },
     deleteRow(index) {
       this.$emit("delete", index);
     },
@@ -63,5 +68,8 @@ export default {
 .title {
   font-size: 1.1rem;
   font-weight: 600;
+}
+.action {
+  text-align: right;
 }
 </style>

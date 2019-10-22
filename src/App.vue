@@ -16,7 +16,7 @@
         <input
           v-model="newSharer"
           style="flex:5 1"
-          placeholder="New share's name"
+          placeholder="New sharer's name"
           @keyup.enter="addSharer()"
         />
         <button
@@ -139,8 +139,9 @@ export default {
 
   methods: {
     clearData() {
-      this.sharers.length = 0;
-      this.expenseRecords = 0;
+      this.sharers = [];
+      this.expenseRecords = [];
+      this.transferBook = [];
       localStorage.clear();
     },
     saveData() {
