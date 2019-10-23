@@ -1,6 +1,6 @@
 <template>
   <table class="transfer-book">
-    <th>Transfer Book</th>
+    <th class="header">Transfer Book</th>
     <tr class="no-data" v-if="tableData.length === 0">
       <td>Nothing is here</td>
     </tr>
