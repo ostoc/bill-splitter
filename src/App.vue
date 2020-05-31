@@ -5,11 +5,7 @@
       <div class="row mb-1">
         <div class="sharer" v-for="(sharer, index) in sharers" :key="index">
           <span v-text="sharer" />
-          <span
-            @click="removeSharer(sharer)"
-            class="sharer__delete-button"
-            v-text="'x'"
-          />
+          <span @click="removeSharer(sharer)" class="sharer__delete-button" v-text="'x'" />
         </div>
       </div>
       <div class="row mb-1">
@@ -33,21 +29,10 @@
     <div class="expense">
       <div class="row mb-1">
         <input v-model="recordTitle" placeholder="Title" style="flex: 2 1" />
-        <input
-          style="flex: 1 1"
-          class="ml-1"
-          type="number"
-          v-model="amount"
-          placeholder="Amount"
-        />
+        <input style="flex: 1 1" class="ml-1" type="number" v-model="amount" placeholder="Amount" />
         <select v-model="paidBy" class="ml-1" style="flex: 2 1">
-          <option value disabled selected>Selecte paid by</option>
-          <option
-            v-for="(sharer, index) in sharers"
-            :key="index"
-            :value="sharer"
-            v-text="sharer"
-          />
+          <option value disabled selected>Select paid by</option>
+          <option v-for="(sharer, index) in sharers" :key="index" :value="sharer" v-text="sharer" />
         </select>
         <button
           style="flex: 1 1"
