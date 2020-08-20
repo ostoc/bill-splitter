@@ -5,13 +5,17 @@
       <div class="row mb-1">
         <div class="sharer" v-for="(sharer, index) in sharers" :key="index">
           <span v-text="sharer" />
-          <span @click="removeSharer(sharer)" class="sharer__delete-button" v-text="'x'" />
+          <span
+            @click="removeSharer(sharer)"
+            class="sharer__delete-button"
+            v-text="'x'"
+          />
         </div>
       </div>
       <div class="row mb-1">
         <input
           v-model="newSharer"
-          style="flex:5 1"
+          style="flex: 5 1;"
           placeholder="New sharer's name"
           @keyup.enter="addSharer()"
         />
@@ -19,7 +23,7 @@
           class="ml-1"
           @click="addSharer()"
           :disabled="!newSharer"
-          style="flex:1 1"
+          style="flex: 1 1;"
           v-text="'Add'"
         />
       </div>
@@ -28,14 +32,25 @@
     <h2>Expense Records</h2>
     <div class="expense">
       <div class="row mb-1">
-        <input v-model="recordTitle" placeholder="Title" style="flex: 2 1" />
-        <input style="flex: 1 1" class="ml-1" type="number" v-model="amount" placeholder="Amount" />
-        <select v-model="paidBy" class="ml-1" style="flex: 2 1">
+        <input v-model="recordTitle" placeholder="Title" style="flex: 2 1;" />
+        <input
+          style="flex: 1 1;"
+          class="ml-1"
+          type="number"
+          v-model="amount"
+          placeholder="Amount"
+        />
+        <select v-model="paidBy" class="ml-1" style="flex: 2 1;">
           <option value disabled selected>Select paid by</option>
-          <option v-for="(sharer, index) in sharers" :key="index" :value="sharer" v-text="sharer" />
+          <option
+            v-for="(sharer, index) in sharers"
+            :key="index"
+            :value="sharer"
+            v-text="sharer"
+          />
         </select>
         <button
-          style="flex: 1 1"
+          style="flex: 1 1;"
           class="ml-1"
           :disabled="!amount || !recordTitle || paidBy === ''"
           @click="addRecord"
@@ -51,7 +66,7 @@
           />
         </div>
       </div>
-      <div class="shares-control" style="justify-content: space-between">
+      <div class="shares-control" style="justify-content: space-between;">
         <div>Shared by {{ selectedSharer.length }} person</div>
         <div>
           <button class="secondary ml-1" @click="selectAll">Select All</button>
@@ -90,23 +105,23 @@ export default {
       newSharer: null,
       paidBy: "",
       sharers: [],
-      expenseRecords: []
+      expenseRecords: [],
     };
   },
   components: {
     ExpanseTable,
-    TransferTable
+    TransferTable,
   },
   computed: {
     individualExpanse() {
       let localBalance = [];
-      this.sharers.forEach(shareName => {
+      this.sharers.forEach((shareName) => {
         localBalance.push({ name: shareName, balance: 0 });
       });
-      this.expenseRecords.forEach(record => {
+      this.expenseRecords.forEach((record) => {
         const sharedAmount = record.amount / record.names.length;
-        record.names.forEach(name => {
-          let share = localBalance.find(item => item.name === name);
+        record.names.forEach((name) => {
+          let share = localBalance.find((item) => item.name === name);
           share.balance = parseFloat(share.balance) + parseFloat(sharedAmount);
         });
       });
@@ -114,20 +129,20 @@ export default {
     },
     individualBalance() {
       const localBalance = JSON.parse(JSON.stringify(this.individualExpanse));
-      localBalance.map(item => {
+      localBalance.map((item) => {
         item.name, (item.balance = -parseFloat(item.balance));
       });
-      this.expenseRecords.forEach(record => {
-        let share = localBalance.find(item => item.name === record.paidBy);
+      this.expenseRecords.forEach((record) => {
+        let share = localBalance.find((item) => item.name === record.paidBy);
         share.balance = parseFloat(share.balance) + parseFloat(record.amount);
       });
       return localBalance;
-    }
+    },
   },
   watch: {
     expenseRecords() {
       this.cals();
-    }
+    },
   },
   methods: {
     clearData() {
@@ -155,13 +170,15 @@ export default {
       this.newSharer = null;
     },
     removeSharer(sharer) {
-      this.sharers = this.sharers.filter(item => item !== sharer);
-      this.selectedSharer = this.selectedSharer.filter(item => item !== sharer);
-      this.expenseRecords.forEach(record => {
-        record.names = record.names.filter(name => name !== sharer);
+      this.sharers = this.sharers.filter((item) => item !== sharer);
+      this.selectedSharer = this.selectedSharer.filter(
+        (item) => item !== sharer
+      );
+      this.expenseRecords.forEach((record) => {
+        record.names = record.names.filter((name) => name !== sharer);
       });
       this.expenseRecords = this.expenseRecords.filter(
-        item => item.paidBy !== sharer
+        (item) => item.paidBy !== sharer
       );
       this.saveData();
     },
@@ -174,7 +191,7 @@ export default {
         title: this.recordTitle,
         names: [...this.selectedSharer],
         amount: this.amount,
-        paidBy: this.paidBy
+        paidBy: this.paidBy,
       };
       if (record.names.length === 0 || record.amount === null) {
         alert("You need select person or have amout");
@@ -188,7 +205,7 @@ export default {
     chooseSharer(sharer) {
       if (this.selectedSharer.includes(sharer)) {
         this.selectedSharer = this.selectedSharer.filter(
-          selected => selected !== sharer
+          (selected) => selected !== sharer
         );
         return this.selectedSharer;
       }
@@ -196,7 +213,7 @@ export default {
     },
     selectAll() {
       this.selectedSharer = [];
-      this.sharers.forEach(sharer => {
+      this.sharers.forEach((sharer) => {
         this.selectedSharer.push(sharer);
       });
     },
@@ -209,11 +226,11 @@ export default {
     },
     sharerSelectorClass(sharer) {
       const isSelected = this.selectedSharer.find(
-        selected => selected === sharer
+        (selected) => selected === sharer
       );
       return {
         "sharer-selector": true,
-        "sharer-selector--selected": isSelected
+        "sharer-selector--selected": isSelected,
       };
     },
     cals() {
@@ -226,19 +243,19 @@ export default {
         if (record.amount >= 0.01) {
           this.transferBook.push(record);
         }
-        if ([...dynamicBalanceBook].every(a => a.balance === 0)) {
+        if ([...dynamicBalanceBook].every((a) => a.balance === 0)) {
           break;
         }
       }
     },
     redirectToGitHub() {
       window.open("https://github.com/ostoc/bill-splitter");
-    }
+    },
   },
   created() {
     this.sharers = getLocalStorage("sharers");
     this.selectedSharer = getLocalStorage("sharers");
     this.expenseRecords = getLocalStorage("expenseRecords");
-  }
+  },
 };
 </script>

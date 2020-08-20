@@ -24,8 +24,8 @@ export default {
   methods: {
     formatedAmount(amount) {
       return formatCurrency(amount);
-    }
-  }
+    },
+  },
 };
 </script>
 

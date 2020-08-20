@@ -26,12 +26,12 @@ export default {
   computed: {
     paidTotal() {
       return totalAmount(this.tableData);
-    }
+    },
   },
   methods: {
     deleteData(index) {
       this.$emit("delete", index);
-    }
-  }
+    },
+  },
 };
 </script>

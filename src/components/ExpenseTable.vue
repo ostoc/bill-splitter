@@ -25,9 +25,16 @@
       </td>
     </tr>
     <tr>
-      <td colspan="3" class="total">Total Spend: {{ formatedAmount(spendTotal) }}</td>
+      <td colspan="3" class="total">
+        Total Spend: {{ formatedAmount(spendTotal) }}
+      </td>
       <td colspan="2" class="action">
-        <button v-if="tableData.length" class="secondary" v-text="'Remove All'" @click="deleteAll" />
+        <button
+          v-if="tableData.length"
+          class="secondary"
+          v-text="'Remove All'"
+          @click="deleteAll"
+        />
       </td>
     </tr>
   </table>
@@ -41,7 +48,7 @@ export default {
   computed: {
     spendTotal() {
       return totalAmount(this.tableData);
-    }
+    },
   },
   methods: {
     formatedAmount(amount) {
@@ -52,8 +59,8 @@ export default {
     },
     deleteAll() {
       this.$emit("deleteAll");
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -25,13 +25,13 @@ export default {
   computed: {
     tableData() {
       return this.data;
-    }
+    },
   },
   methods: {
     displayBalance(value) {
       return formatCurrency(value);
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="css"></style>

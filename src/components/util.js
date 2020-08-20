@@ -5,10 +5,10 @@ export function formatCurrency(amount) {
   return value.toFixed(2);
 }
 export function calulationDiffer(book) {
-  const max = book.reduce(function(prev, current) {
+  const max = book.reduce(function (prev, current) {
     return prev.balance > current.balance ? prev : current;
   });
-  const min = book.reduce(function(prev, current) {
+  const min = book.reduce(function (prev, current) {
     return prev.balance < current.balance ? prev : current;
   });
   const detal = max.balance + min.balance;
@@ -23,7 +23,7 @@ export function calulationDiffer(book) {
   return {
     amount: amount,
     from: min.name,
-    to: max.name
+    to: max.name,
   };
 }
 
@@ -33,7 +33,7 @@ export function getLocalStorage(key) {
 
 export function totalAmount(records) {
   let total = 0;
-  records.forEach(record => {
+  records.forEach((record) => {
     total = parseFloat(total) + parseFloat(record.amount);
   });
   return total;
