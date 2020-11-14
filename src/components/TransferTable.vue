@@ -17,14 +17,21 @@
 </template>
 
 <script>
-import { formatCurrency } from "@/components/util";
+import { formatCurrency } from "../util.js";
 export default {
   name: "TransferTable",
-  props: ["tableData"],
-  methods: {
-    formatedAmount(amount) {
-      return formatCurrency(amount);
+  props: {
+    tableData: {
+      type: Array,
+      default: [],
     },
+  },
+
+  setup(props) {
+    const formatedAmount = (amount) => formatCurrency(amount);
+    return {
+      formatedAmount,
+    };
   },
 };
 </script>

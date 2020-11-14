@@ -41,25 +41,36 @@
 </template>
 
 <script>
-import { totalAmount, formatCurrency } from "@/components/util";
+import { totalAmount, formatCurrency } from "../util.js";
+import { computed } from "vue";
 export default {
   name: "ExpenseTable",
-  props: ["tableData"],
-  computed: {
-    spendTotal() {
-      return totalAmount(this.tableData);
+  props: {
+    tableData: {
+      type: Array,
+      default: [],
     },
   },
-  methods: {
-    formatedAmount(amount) {
+
+  setup(props, { emit }) {
+    const spendTotal = computed(() => {
+      return totalAmount(props.tableData);
+    });
+    const formatedAmount = (amount) => {
       return formatCurrency(amount);
-    },
-    deleteRow(index) {
-      this.$emit("delete", index);
-    },
-    deleteAll() {
-      this.$emit("deleteAll");
-    },
+    };
+    const deleteRow = (index) => {
+      emit("delete", index);
+    };
+    const deleteAll = () => {
+      emit("deleteAll");
+    };
+    return {
+      spendTotal,
+      formatedAmount,
+      deleteRow,
+      deleteAll,
+    };
   },
 };
 </script>

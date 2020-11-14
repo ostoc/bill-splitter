@@ -1,99 +1,97 @@
 <template>
-  <div id="app">
-    <h2>Sharers</h2>
-    <div class="sharers">
-      <div class="row mb-1">
-        <div class="sharer" v-for="(sharer, index) in sharers" :key="index">
-          <span v-text="sharer" />
-          <span
-            @click="removeSharer(sharer)"
-            class="sharer__delete-button"
-            v-text="'x'"
-          />
-        </div>
-      </div>
-      <div class="row mb-1">
-        <input
-          v-model="newSharer"
-          style="flex: 5 1;"
-          placeholder="New sharer's name"
-          @keyup.enter="addSharer()"
-        />
-        <button
-          class="ml-1"
-          @click="addSharer()"
-          :disabled="!newSharer"
-          style="flex: 1 1;"
-          v-text="'Add'"
+  <h2>Sharers</h2>
+  <div class="sharers">
+    <div class="row mb-1">
+      <div class="sharer" v-for="(sharer, index) in sharers" :key="index">
+        <span v-text="sharer" />
+        <span
+          @click="removeSharer(sharer)"
+          class="sharer__delete-button"
+          v-text="'x'"
         />
       </div>
     </div>
-
-    <h2>Expense Records</h2>
-    <div class="expense">
-      <div class="row mb-1">
-        <input v-model="recordTitle" placeholder="Title" style="flex: 2 1;" />
-        <input
-          style="flex: 1 1;"
-          class="ml-1"
-          type="number"
-          v-model="amount"
-          placeholder="Amount"
-        />
-        <select v-model="paidBy" class="ml-1" style="flex: 2 1;">
-          <option value disabled selected>Select paid by</option>
-          <option
-            v-for="(sharer, index) in sharers"
-            :key="index"
-            :value="sharer"
-            v-text="sharer"
-          />
-        </select>
-        <button
-          style="flex: 1 1;"
-          class="ml-1"
-          :disabled="!amount || !recordTitle || paidBy === ''"
-          @click="addRecord"
-          v-text="'Add'"
-        />
-      </div>
-      <div class="row">
-        <div v-for="(sharer, index) in sharers" :key="index">
-          <div
-            :class="sharerSelectorClass(sharer)"
-            @click="chooseSharer(sharer)"
-            v-text="sharer.substring(0, 3)"
-          />
-        </div>
-      </div>
-      <div class="shares-control" style="justify-content: space-between;">
-        <div>Shared by {{ selectedSharer.length }} person</div>
-        <div>
-          <button class="secondary ml-1" @click="selectAll">Select All</button>
-          <button class="secondary ml-1" @click="removeAll">Remove All</button>
-        </div>
-      </div>
+    <div class="row mb-1">
+      <input
+        v-model="newSharer"
+        style="flex: 5 1"
+        placeholder="New sharer's name"
+        @keyup.enter="addSharer()"
+      />
+      <button
+        class="ml-1"
+        @click="addSharer()"
+        :disabled="!newSharer"
+        style="flex: 1 1"
+        v-text="'Add'"
+      />
     </div>
+  </div>
 
-    <ExpanseTable
-      :tableData="expenseRecords"
-      @delete="deleteExpenseRecord"
-      @deleteAll="deleteAllExpenseRecord"
-    />
-
-    <!-- <button class="calculation" @click="cals">Split Bill</button> -->
-    <TransferTable :tableData="transferBook"></TransferTable>
+  <h2>Expense Records</h2>
+  <div class="expense">
+    <div class="row mb-1">
+      <input v-model="recordTitle" placeholder="Title" style="flex: 2 1" />
+      <input
+        style="flex: 1 1"
+        class="ml-1"
+        type="number"
+        v-model="amount"
+        placeholder="Amount"
+      />
+      <select v-model="paidBy" class="ml-1" style="flex: 2 1">
+        <option value disabled selected>Select paid by</option>
+        <option
+          v-for="(sharer, index) in sharers"
+          :key="index"
+          :value="sharer"
+          v-text="sharer"
+        />
+      </select>
+      <button
+        style="flex: 1 1"
+        class="ml-1"
+        :disabled="!amount || !recordTitle || paidBy === ''"
+        @click="addRecord"
+        v-text="'Add'"
+      />
+    </div>
     <div class="row">
-      <button class="secondary" @click="clearData">Clear All Data</button>
-      <button class="secondary ml-1" @click="redirectToGitHub">GitHub</button>
+      <div v-for="(sharer, index) in sharers" :key="index">
+        <div
+          :class="sharerSelectorClass(sharer)"
+          @click="chooseSharer(sharer)"
+          v-text="sharer.substring(0, 3)"
+        />
+      </div>
     </div>
+    <div class="shares-control" style="justify-content: space-between">
+      <div>Shared by {{ selectedSharer.length }} person</div>
+      <div>
+        <button class="secondary ml-1" @click="selectAll">Select All</button>
+        <button class="secondary ml-1" @click="removeAll">Remove All</button>
+      </div>
+    </div>
+  </div>
+
+  <ExpanseTable
+    :tableData="expenseRecords"
+    @delete="deleteExpenseRecord"
+    @deleteAll="deleteAllExpenseRecord"
+  />
+
+  <!-- <button class="calculation" @click="cals">Split Bill</button> -->
+  <TransferTable :tableData="transferBook"></TransferTable>
+  <div class="row">
+    <button class="secondary" @click="clearData">Clear All Data</button>
+    <button class="secondary ml-1" @click="redirectToGitHub">GitHub</button>
   </div>
 </template>
 
 <script>
-import ExpanseTable from "@/components/ExpenseTable";
-import TransferTable from "@/components/TransferTable";
-import { calulationDiffer, getLocalStorage } from "@/components/util";
+import ExpanseTable from "./components/ExpenseTable.vue";
+import TransferTable from "./components/TransferTable.vue";
+import { calulationDiffer, getLocalStorage } from "./util.js";
 export default {
   name: "app",
   data() {
