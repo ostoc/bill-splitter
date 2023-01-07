@@ -1,4 +1,16 @@
 <template>
+  <div class="row">
+    <button v-if="!secret" class="full-width" @click="saveCloud">
+      ☁️ Share
+    </button>
+    <div v-else class="row">
+      <input disabled :value="shareUrl" style="flex: 5 1" />
+      <button class="danger" @click="deleteCloud('delete')" style="flex: 1 1">
+        Delete
+      </button>
+      <button style="flex: 1 1" @click="clearData('new')">New</button>
+    </div>
+  </div>
   <div class="sharers">
     <h3>Sharers</h3>
     <div class="row mb-1">
@@ -80,7 +92,6 @@
   />
   <TransferTable :table-data="transferBook" />
   <div class="row">
-    <button class="secondary" @click="clearData">Clear All Data</button>
     <button class="secondary ml-1" @click="redirectToGitHub">GitHub</button>
   </div>
 </template>
@@ -88,8 +99,19 @@
 <script setup>
 import ExpenseTable from "./components/ExpenseTable.vue";
 import TransferTable from "./components/TransferTable.vue";
-import { getLocalStorage, billSplitter } from "./util.js";
-import { ref, onMounted } from "vue";
+import {
+  getLocalStorage,
+  billSplitter,
+  getSecret,
+  generetUrl,
+} from "./util.js";
+import { ref, onMounted, computed } from "vue";
+import {
+  createRecord,
+  updateRecord,
+  fetchRecord,
+  deleteRecord,
+} from "./supabase";
 
 const amount = ref(0);
 const selectedSharer = ref([]);
@@ -99,16 +121,27 @@ const newSharer = ref("");
 const paidBy = ref("");
 const sharers = ref([]);
 const expenseRecords = ref([]);
+const secret = ref("");
 
-const clearData = () => {
-  sharers.value = [];
-  expenseRecords.value = [];
-  transferBook.value = [];
-  selectedSharer.value = [];
-  localStorage.clear();
+const clearData = type => {
+  const deleteText = `Are you sure? The cloud data will be deleted!`;
+  const newText = `Are you sure you? Remember to bookmark this page before you create a new one!`;
+  if (confirm(type === "new" ? newText : deleteText)) {
+    sharers.value = [];
+    expenseRecords.value = [];
+    transferBook.value = [];
+    selectedSharer.value = [];
+    secret.value = "";
+    localStorage.clear();
+    window.location.href = import.meta.env.VITE_BASE_URL;
+  }
 };
 
 const saveData = () => {
+  if (secret.value) {
+    saveCloud();
+  }
+  localStorage.setItem("secret", JSON.stringify(sharers.value));
   localStorage.setItem("sharers", JSON.stringify(sharers.value));
   localStorage.setItem("expenseRecords", JSON.stringify(expenseRecords.value));
 };
@@ -205,10 +238,47 @@ const redirectToGitHub = () => {
   window.open("https://github.com/ostoc/bill-splitter");
 };
 
+const saveCloud = async () => {
+  if (!secret.value) {
+    await createRecord(expenseRecords.value, sharers.value).then(data => {
+      secret.value = data.secret;
+    });
+    window.location.href = `${import.meta.env.VITE_BASE_URL}/?secret=${
+      secret.value
+    }`;
+  }
+  await updateRecord(secret.value, expenseRecords.value, sharers.value);
+};
+
+const deleteCloud = async () => {
+  if (!secret.value) return;
+  deleteRecord(secret.value);
+  clearData();
+};
+
+const fetchCloud = async () => {
+  if (!secret.value) return;
+
+  const { data } = await fetchRecord(secret.value);
+  if (data) {
+    sharers.value = data.sharers;
+    expenseRecords.value = data.records;
+  } else {
+    secret.value = "";
+    window.location.href = import.meta.env.VITE_BASE_URL;
+  }
+};
+
+const shareUrl = computed(() => {
+  return secret.value ? generetUrl(secret.value) : "";
+});
+
 onMounted(() => {
   sharers.value = getLocalStorage("sharers");
   selectedSharer.value = getLocalStorage("sharers");
   expenseRecords.value = getLocalStorage("expenseRecords");
+  secret.value = getSecret();
+  fetchCloud();
   splitBill();
 });
 </script>

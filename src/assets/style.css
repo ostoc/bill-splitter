@@ -2,6 +2,7 @@
   --primary-color: #090057;
   --secondar-color: #ffa069;
   --disabled-color: #fadce5;
+  --danger-color: #d40d0d;
   --default-font: "IBM Plex Mono", monospace;
 }
 
@@ -29,6 +30,7 @@ h2 {
 }
 
 .row {
+  width: 100%;
   display: flex;
   flex-direction: row;
   align-content: center;
@@ -99,6 +101,9 @@ button:hover {
 button:disabled {
   background: var(--disabled-color);
 }
+button.danger {
+  background: var(--danger-color);
+}
 
 button.secondary {
   padding: 0;
@@ -109,9 +114,10 @@ button.secondary {
   border-bottom: 2px dotted #000;
 }
 
-button.calculation {
-  width: 100%;
+button.full-width {
   height: 3rem;
+  width: 100%;
+  box-sizing: border-box;
   background: var(--primary-color);
 }
 
