@@ -1,8 +1,8 @@
 <template>
   <table class="transfer-book">
     <th class="header">Transfer Book</th>
-    <tr class="no-data" v-if="tableData.length === 0">
-      <td>Nothing is here</td>
+    <tr v-if="tableData.length === 0" class="no-data">
+      <td>Looks like all clear 🆑</td>
     </tr>
     <tr v-for="(record, index) in tableData" :key="index">
       <td>
@@ -16,35 +16,32 @@
   </table>
 </template>
 
-<script>
+<script setup>
+import { computed } from "vue";
 import { formatCurrency } from "../util.js";
-export default {
-  name: "TransferTable",
-  props: {
-    tableData: {
-      type: Array,
-      default: [],
-    },
+const props = defineProps({
+  tableData: {
+    type: Array,
+    default: null,
   },
-
-  setup(props) {
-    const formatedAmount = (amount) => formatCurrency(amount);
-    return {
-      formatedAmount,
-    };
-  },
-};
+});
+const tableData = computed(() => {
+  return props.tableData;
+});
+const formatedAmount = amount => formatCurrency(amount);
 </script>
 
 <style scoped>
 .transfer-book {
   background: #ffdddd;
 }
+
 .no-data {
   text-align: center;
   color: #888;
   height: 4rem;
 }
+
 strong {
   font-size: 1.1rem;
 }

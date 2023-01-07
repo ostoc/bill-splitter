@@ -14,7 +14,7 @@
       <td class="title">{{ data.title }}</td>
       <td>{{ data.paidBy }}</td>
       <td>
-        <span v-for="(name, index) in data.names" :key="name">
+        <span v-for="(name, index) in data.names" :key="index">
           <span v-text="name" />
           <span v-if="index < data.names.length - 1" v-text="','" />
         </span>
@@ -32,46 +32,36 @@
         <button
           v-if="tableData.length"
           class="secondary"
-          v-text="'Remove All'"
           @click="deleteAll"
+          v-text="'Remove All'"
         />
       </td>
     </tr>
   </table>
 </template>
 
-<script>
+<script setup>
 import { totalAmount, formatCurrency } from "../util.js";
 import { computed } from "vue";
-export default {
-  name: "ExpenseTable",
-  props: {
-    tableData: {
-      type: Array,
-      default: [],
-    },
+const emit = defineEmits(["delete", "deleteAll"]);
+const props = defineProps({
+  tableData: {
+    type: Array,
+    default: null,
   },
+});
+const spendTotal = computed(() => {
+  return totalAmount(props.tableData);
+});
+const formatedAmount = amount => {
+  return formatCurrency(amount);
+};
 
-  setup(props, { emit }) {
-    const spendTotal = computed(() => {
-      return totalAmount(props.tableData);
-    });
-    const formatedAmount = (amount) => {
-      return formatCurrency(amount);
-    };
-    const deleteRow = (index) => {
-      emit("delete", index);
-    };
-    const deleteAll = () => {
-      emit("deleteAll");
-    };
-    return {
-      spendTotal,
-      formatedAmount,
-      deleteRow,
-      deleteAll,
-    };
-  },
+const deleteRow = index => {
+  emit("delete", index);
+};
+const deleteAll = () => {
+  emit("deleteAll");
 };
 </script>
 
@@ -79,13 +69,16 @@ export default {
 .expense-table {
   background: #d5ece8;
 }
+
 .title {
   font-size: 1.1rem;
   font-weight: 600;
 }
+
 .action {
   text-align: right;
 }
+
 .header {
   font-size: 1.2rem;
   font-weight: 600;
