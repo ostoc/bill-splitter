@@ -5,7 +5,7 @@
     </button>
     <div v-else class="row">
       <input disabled :value="shareUrl" style="flex: 5 1" />
-      <button class="danger" @click="deleteCloud('delete')" style="flex: 1 1">
+      <button class="danger" @click="clearData('delete')" style="flex: 1 1">
         Delete
       </button>
       <button style="flex: 1 1" @click="clearData('new')">New</button>
@@ -134,6 +134,7 @@ const clearData = type => {
     secret.value = "";
     localStorage.clear();
     window.location.href = import.meta.env.VITE_BASE_URL;
+    type === "delete" ? deleteRecord(secret.value) : null;
   }
 };
 
@@ -263,12 +264,6 @@ const saveCloud = async () => {
     sharers.value,
     transferBook.value
   );
-};
-
-const deleteCloud = async () => {
-  if (!secret.value) return;
-  deleteRecord(secret.value);
-  clearData();
 };
 
 const fetchCloud = async () => {

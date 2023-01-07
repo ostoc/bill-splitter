@@ -2,7 +2,7 @@
   <table class="transfer-book">
     <th colspan="2" class="header">Transfer Book</th>
     <tr v-if="tableData.length === 0" class="no-data">
-      <td>Looks like all clear 🆑</td>
+      <td colspan="2">Looks like all clear 🆑</td>
     </tr>
     <tr
       v-for="(record, index) in tableData"
