@@ -90,7 +90,7 @@
     @delete="deleteExpense"
     @delete-all="deleteAllExpense"
   />
-  <TransferTable :table-data="transferBook" />
+  <TransferTable :table-data="transferBook" @mark="markPaid" />
   <div class="row">
     <button class="secondary ml-1" @click="redirectToGitHub">GitHub</button>
   </div>
@@ -141,8 +141,9 @@ const saveData = () => {
   if (secret.value) {
     saveCloud();
   }
-  localStorage.setItem("secret", JSON.stringify(sharers.value));
+  localStorage.setItem("secret", JSON.stringify(secret.value));
   localStorage.setItem("sharers", JSON.stringify(sharers.value));
+  localStorage.setItem("transferBook", JSON.stringify(transferBook.value));
   localStorage.setItem("expenseRecords", JSON.stringify(expenseRecords.value));
 };
 const addSharer = () => {
@@ -229,6 +230,11 @@ const sharerSelectorClass = sharer => {
     "sharer-selector--selected": isSelected,
   };
 };
+const markPaid = index => {
+  const selected = transferBook.value[index];
+  selected.paid = !selected.paid;
+  saveCloud();
+};
 
 const splitBill = () => {
   transferBook.value = billSplitter(sharers.value, expenseRecords.value);
@@ -240,14 +246,23 @@ const redirectToGitHub = () => {
 
 const saveCloud = async () => {
   if (!secret.value) {
-    await createRecord(expenseRecords.value, sharers.value).then(data => {
+    await createRecord(
+      expenseRecords.value,
+      sharers.value,
+      transferBook.value
+    ).then(data => {
       secret.value = data.secret;
     });
     window.location.href = `${import.meta.env.VITE_BASE_URL}/?secret=${
       secret.value
     }`;
   }
-  await updateRecord(secret.value, expenseRecords.value, sharers.value);
+  await updateRecord(
+    secret.value,
+    expenseRecords.value,
+    sharers.value,
+    transferBook.value
+  );
 };
 
 const deleteCloud = async () => {
@@ -263,6 +278,7 @@ const fetchCloud = async () => {
   if (data) {
     sharers.value = data.sharers;
     expenseRecords.value = data.records;
+    transferBook.value = data.transfer;
   } else {
     secret.value = "";
     window.location.href = import.meta.env.VITE_BASE_URL;
@@ -277,6 +293,7 @@ onMounted(() => {
   sharers.value = getLocalStorage("sharers");
   selectedSharer.value = getLocalStorage("sharers");
   expenseRecords.value = getLocalStorage("expenseRecords");
+  transferBook.value = getLocalStorage("transferBook");
   secret.value = getSecret();
   fetchCloud();
   splitBill();

@@ -59,6 +59,7 @@ export function calulationDiffer(book) {
     amount: amount,
     from: min.name,
     to: max.name,
+    paid: false,
   };
 }
 export function billSplitter(sharers, expenseRecords) {

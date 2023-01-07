@@ -7,12 +7,12 @@ const alphabet = "123456789ABCDEFGHIJKLMNPQRSTUVWXYZ";
 const nanoid = customAlphabet(alphabet, 4);
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-export const createRecord = async (records, sharers) => {
+export const createRecord = async (records, sharers, transfer) => {
   const secret = nanoid();
   console.log(nanoid());
   const { data, error } = await supabase
     .from("expenses")
-    .insert({ records, sharers, secret })
+    .insert({ records, sharers, secret, transfer })
     .select("secret");
   if (error) {
     console.log("Something went wrong");
@@ -20,10 +20,10 @@ export const createRecord = async (records, sharers) => {
   return { data: data[0], error, secret };
 };
 
-export const updateRecord = async (secret, records, sharers) => {
+export const updateRecord = async (secret, records, sharers, transfer) => {
   const { error } = await supabase
     .from("expenses")
-    .update({ records, sharers })
+    .update({ records, sharers, transfer })
     .eq("secret", secret);
   if (error) {
     console.log("Something went wrong");
