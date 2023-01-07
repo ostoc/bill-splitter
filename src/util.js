@@ -76,3 +76,13 @@ export function billSplitter(sharers, expenseRecords) {
   }
   return transferBook;
 }
+
+export function getSecret() {
+  const url = new URL(window.location.href);
+  return url.searchParams.get("secret");
+}
+
+const baseUrl = import.meta.env.VITE_BASE_URL;
+export function generetUrl(secrect) {
+  return `${baseUrl}/?secret=${secrect}`;
+}
