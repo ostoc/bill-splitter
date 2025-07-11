@@ -1,10 +1,77 @@
-export function formatCurrency(amount) {
-  let value = amount;
-  value = Math.round(value * 100);
-  value = value / 100;
-  return value.toFixed(2);
+function round(value) {
+  return Math.round(value * 100) / 100;
 }
 
+export function formatCurrency(amount) {
+  return (Math.round(amount * 100) / 100).toFixed(2);
+}
+
+export function calculationDiffer(book) {
+  const max = book.reduce((prev, curr) =>
+    prev.balance > curr.balance ? prev : curr
+  );
+  const min = book.reduce((prev, curr) =>
+    prev.balance < curr.balance ? prev : curr
+  );
+
+  const amount = Math.min(Math.abs(min.balance), Math.abs(max.balance));
+  const roundedAmount = Math.round(amount * 100) / 100;
+
+  // Settle this amount between max and min
+  min.balance += roundedAmount;
+  max.balance -= roundedAmount;
+
+  min.balance = Math.round(min.balance * 100) / 100;
+  max.balance = Math.round(max.balance * 100) / 100;
+
+  return {
+    amount: roundedAmount,
+    from: min.name,
+    to: max.name,
+    paid: false,
+  };
+}
+export function billSplitter(sharers, expenseRecords) {
+  // Step 1: Calculate individual balances
+  let balances = individualExpense(sharers, expenseRecords).map(e => ({
+    name: e.name,
+    balance: round(e.balance),
+  }));
+
+  // Guard: if less than 2 balances, nothing to split
+  if (!balances.length || balances.length < 2) return [];
+
+  const transferBook = [];
+
+  // Step 2: Continue until all balances are close enough to zero
+  while (true) {
+    // Sort by balance: debtors first (negative), creditors last (positive)
+    balances.sort((a, b) => a.balance - b.balance);
+
+    const debtor = balances[0];
+    const creditor = balances[balances.length - 1];
+
+    // Exit condition: everyone is settled
+    if (round(debtor.balance) >= 0 || round(creditor.balance) <= 0) break;
+
+    // Calculate amount to transfer
+    const amount = round(Math.min(Math.abs(debtor.balance), creditor.balance));
+
+    // Record the transaction
+    transferBook.push({
+      from: debtor.name,
+      to: creditor.name,
+      amount: amount,
+      paid: false,
+    });
+
+    // Update balances
+    debtor.balance = round(debtor.balance + amount);
+    creditor.balance = round(creditor.balance - amount);
+  }
+
+  return transferBook;
+}
 export function getLocalStorage(key) {
   return localStorage.getItem(key) ? JSON.parse(localStorage.getItem(key)) : [];
 }
@@ -37,53 +104,4 @@ export function individualExpense(sharers, expenseRecords) {
   });
 
   return localBalance;
-}
-
-export function calulationDiffer(book) {
-  const max = book.reduce(function (prev, current) {
-    return prev.balance > current.balance ? prev : current;
-  });
-  const min = book.reduce(function (prev, current) {
-    return prev.balance < current.balance ? prev : current;
-  });
-  const detal = max.balance + min.balance;
-  const amount = Math.abs(Math.min(max.balance, min.balance));
-  if (detal > 0) {
-    max.balance = detal;
-    min.balance = 0;
-  } else {
-    min.balance = detal;
-    max.balance = 0;
-  }
-  return {
-    amount: amount,
-    from: min.name,
-    to: max.name,
-    paid: false,
-  };
-}
-export function billSplitter(sharers, expenseRecords) {
-  const expense = individualExpense(sharers, expenseRecords);
-  console.log(expense);
-  let transferBook = [];
-  for (let i = 0; i < expense.length; i++) {
-    let record = calulationDiffer(expense);
-    if (record.amount >= 0.01) {
-      transferBook.push(record);
-    }
-    if ([...expense].every(a => a.balance === 0)) {
-      break;
-    }
-  }
-  return transferBook;
-}
-
-export function getSecret() {
-  const url = new URL(window.location.href);
-  return url.searchParams.get("secret");
-}
-
-const baseUrl = import.meta.env.VITE_BASE_URL;
-export function generetUrl(secrect) {
-  return `${baseUrl}/?secret=${secrect}`;
 }

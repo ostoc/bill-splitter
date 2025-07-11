@@ -1,16 +1,4 @@
 <template>
-  <div class="row">
-    <button v-if="!secret" class="full-width" @click="saveCloud">
-      ☁️ Share
-    </button>
-    <div v-else class="row">
-      <input disabled :value="shareUrl" style="flex: 5 1" />
-      <button class="danger" @click="clearData('delete')" style="flex: 1 1">
-        Delete
-      </button>
-      <button style="flex: 1 1" @click="clearData('new')">New</button>
-    </div>
-  </div>
   <div class="sharers">
     <h3>Sharers</h3>
     <div class="row mb-1">
@@ -91,7 +79,11 @@
     @delete-all="deleteAllExpense"
   />
   <TransferTable :table-data="transferBook" @mark="markPaid" />
+
   <div class="row">
+    <button class="danger" @click="clearData('delete')" style="flex: 1 1">
+      Delete
+    </button>
     <button class="secondary ml-1" @click="redirectToGitHub">GitHub</button>
   </div>
 </template>
@@ -99,19 +91,8 @@
 <script setup>
 import ExpenseTable from "./components/ExpenseTable.vue";
 import TransferTable from "./components/TransferTable.vue";
-import {
-  getLocalStorage,
-  billSplitter,
-  getSecret,
-  generetUrl,
-} from "./util.js";
+import { getLocalStorage, billSplitter } from "./util.js";
 import { ref, onMounted, computed } from "vue";
-import {
-  createRecord,
-  updateRecord,
-  fetchRecord,
-  deleteRecord,
-} from "./supabase";
 
 const amount = ref(0);
 const selectedSharer = ref([]);
@@ -121,7 +102,6 @@ const newSharer = ref("");
 const paidBy = ref("");
 const sharers = ref([]);
 const expenseRecords = ref([]);
-const secret = ref("");
 
 const clearData = type => {
   const deleteText = `Are you sure? The cloud data will be deleted!`;
@@ -131,18 +111,11 @@ const clearData = type => {
     expenseRecords.value = [];
     transferBook.value = [];
     selectedSharer.value = [];
-    secret.value = "";
     localStorage.clear();
-    window.location.href = import.meta.env.VITE_BASE_URL;
-    type === "delete" ? deleteRecord(secret.value) : null;
   }
 };
 
 const saveData = () => {
-  if (secret.value) {
-    saveCloud();
-  }
-  localStorage.setItem("secret", JSON.stringify(secret.value));
   localStorage.setItem("sharers", JSON.stringify(sharers.value));
   localStorage.setItem("transferBook", JSON.stringify(transferBook.value));
   localStorage.setItem("expenseRecords", JSON.stringify(expenseRecords.value));
@@ -155,7 +128,7 @@ const addSharer = () => {
   sharers.value.push(newSharer.value);
   selectedSharer.value.push(newSharer.value);
   saveData();
-  newSharer.value = null;
+  newSharer.value = "";
 };
 
 const removeSharer = sharer => {
@@ -234,7 +207,6 @@ const sharerSelectorClass = sharer => {
 const markPaid = index => {
   const selected = transferBook.value[index];
   selected.paid = !selected.paid;
-  saveCloud();
 };
 
 const splitBill = () => {
@@ -245,52 +217,11 @@ const redirectToGitHub = () => {
   window.open("https://github.com/ostoc/bill-splitter");
 };
 
-const saveCloud = async () => {
-  if (!secret.value) {
-    await createRecord(
-      expenseRecords.value,
-      sharers.value,
-      transferBook.value
-    ).then(data => {
-      secret.value = data.secret;
-    });
-    window.location.href = `${import.meta.env.VITE_BASE_URL}/?secret=${
-      secret.value
-    }`;
-  }
-  await updateRecord(
-    secret.value,
-    expenseRecords.value,
-    sharers.value,
-    transferBook.value
-  );
-};
-
-const fetchCloud = async () => {
-  if (!secret.value) return;
-
-  const { data } = await fetchRecord(secret.value);
-  if (data) {
-    sharers.value = data.sharers;
-    expenseRecords.value = data.records;
-    transferBook.value = data.transfer;
-  } else {
-    secret.value = "";
-    window.location.href = import.meta.env.VITE_BASE_URL;
-  }
-};
-
-const shareUrl = computed(() => {
-  return secret.value ? generetUrl(secret.value) : "";
-});
-
 onMounted(() => {
   sharers.value = getLocalStorage("sharers");
   selectedSharer.value = getLocalStorage("sharers");
   expenseRecords.value = getLocalStorage("expenseRecords");
   transferBook.value = getLocalStorage("transferBook");
-  secret.value = getSecret();
-  fetchCloud();
   splitBill();
 });
 </script>
