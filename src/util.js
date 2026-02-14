@@ -100,7 +100,7 @@ export function individualExpense(sharers, expenseRecords) {
   });
 
   localBalance.map(item => {
-    item.name, (item.balance = item.paid - item.spend);
+    item.balance = item.paid - item.spend;
   });
 
   return localBalance;

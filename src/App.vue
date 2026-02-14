@@ -2,7 +2,11 @@
   <div class="sharers">
     <h3>Sharers</h3>
     <div class="row mb-1">
-      <div v-for="(sharer, index) in sharers" :key="index" class="sharer">
+      <div
+        v-for="(sharer, index) in sharers"
+        :key="index"
+        class="sharer"
+      >
         <span v-text="sharer" />
         <span
           class="sharer__delete-button"
@@ -17,7 +21,7 @@
         style="flex: 5 1"
         placeholder="New sharer's name"
         @keyup.enter="addSharer()"
-      />
+      >
       <button
         :disabled="!newSharer"
         class="ml-1"
@@ -30,7 +34,11 @@
   <div class="expenses">
     <h3>Add Expense</h3>
     <div class="row mb-1">
-      <input v-model="recordTitle" placeholder="Title" style="flex: 2 1" />
+      <input
+        v-model="recordTitle"
+        placeholder="Title"
+        style="flex: 2 1"
+      >
       <input
         v-model="amount"
         class="ml-1"
@@ -38,9 +46,19 @@
         min="0"
         placeholder="Amount"
         style="flex: 1 1"
-      />
-      <select v-model="paidBy" class="ml-1" style="flex: 2 1">
-        <option value disabled selected>Select paid by</option>
+      >
+      <select
+        v-model="paidBy"
+        class="ml-1"
+        style="flex: 2 1"
+      >
+        <option
+          value
+          disabled
+          selected
+        >
+          Select paid by
+        </option>
         <option
           v-for="(sharer, index) in sharers"
           :key="index"
@@ -56,7 +74,10 @@
       />
     </div>
     <div class="row">
-      <div v-for="(sharer, index) in sharers" :key="index">
+      <div
+        v-for="(sharer, index) in sharers"
+        :key="index"
+      >
         <div
           :class="sharerSelectorClass(sharer)"
           @click="chooseSharer(sharer)"
@@ -64,11 +85,24 @@
         />
       </div>
     </div>
-    <div class="shares-control" style="justify-content: space-between">
+    <div
+      class="shares-control"
+      style="justify-content: space-between"
+    >
       <div>Shared by {{ selectedSharer.length }} person</div>
       <div>
-        <button class="secondary ml-1" @click="selectAll">Select All</button>
-        <button class="secondary ml-1" @click="removeAll">Remove All</button>
+        <button
+          class="secondary ml-1"
+          @click="selectAll"
+        >
+          Select All
+        </button>
+        <button
+          class="secondary ml-1"
+          @click="removeAll"
+        >
+          Remove All
+        </button>
       </div>
     </div>
   </div>
@@ -78,13 +112,25 @@
     @delete="deleteExpense"
     @delete-all="deleteAllExpense"
   />
-  <TransferTable :table-data="transferBook" @mark="markPaid" />
+  <TransferTable
+    :table-data="transferBook"
+    @mark="markPaid"
+  />
 
   <div class="row">
-    <button class="danger" @click="clearData('delete')" style="flex: 1 1">
+    <button
+      class="danger"
+      style="flex: 1 1"
+      @click="clearData('delete')"
+    >
       Delete
     </button>
-    <button class="secondary ml-1" @click="redirectToGitHub">GitHub</button>
+    <button
+      class="secondary ml-1"
+      @click="redirectToGitHub"
+    >
+      GitHub
+    </button>
   </div>
 </template>
 
