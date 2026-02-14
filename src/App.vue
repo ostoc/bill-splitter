@@ -3,16 +3,18 @@
     <h3>Sharers</h3>
     <div class="row mb-1">
       <div
-        v-for="(sharer, index) in sharers"
-        :key="index"
+        v-for="sharer in sharers"
+        :key="sharer"
         class="sharer"
       >
-        <span v-text="sharer" />
-        <span
+        <span>{{ sharer }}</span>
+        <button
           class="sharer__delete-button"
-          @click="removeSharer(sharer)"
-          v-text="'x'"
-        />
+          aria-label="Remove sharer"
+          @click="handleRemoveSharer(sharer)"
+        >
+          x
+        </button>
       </div>
     </div>
     <div class="row mb-1">
@@ -20,14 +22,15 @@
         v-model="newSharer"
         style="flex: 5 1"
         placeholder="New sharer's name"
-        @keyup.enter="addSharer()"
+        @keyup.enter="handleAddSharer"
       >
       <button
-        :disabled="!newSharer"
         class="ml-1"
-        @click="addSharer()"
-        v-text="'Add'"
-      />
+        :disabled="!newSharer"
+        @click="handleAddSharer"
+      >
+        Add
+      </button>
     </div>
   </div>
 
@@ -40,10 +43,11 @@
         style="flex: 2 1"
       >
       <input
-        v-model="amount"
+        v-model.number="amount"
         class="ml-1"
         type="number"
         min="0"
+        step="0.01"
         placeholder="Amount"
         style="flex: 1 1"
       >
@@ -53,53 +57,52 @@
         style="flex: 2 1"
       >
         <option
-          value
+          value=""
           disabled
-          selected
         >
           Select paid by
         </option>
         <option
-          v-for="(sharer, index) in sharers"
-          :key="index"
+          v-for="sharer in sharers"
+          :key="sharer"
           :value="sharer"
-          v-text="sharer"
-        />
+        >
+          {{ sharer }}
+        </option>
       </select>
       <button
         class="ml-1"
-        :disabled="!amount || !recordTitle || paidBy === ''"
-        @click="addExpense"
-        v-text="'Add'"
-      />
+        :disabled="!isExpenseFormValid"
+        @click="handleAddExpense"
+      >
+        Add
+      </button>
     </div>
     <div class="row">
-      <div
-        v-for="(sharer, index) in sharers"
-        :key="index"
+      <button
+        v-for="sharer in sharers"
+        :key="sharer"
+        :class="['sharer-selector', { 'sharer-selector--selected': selectedSharers.has(sharer) }]"
+        @click="toggleSharer(sharer)"
       >
-        <div
-          :class="sharerSelectorClass(sharer)"
-          @click="chooseSharer(sharer)"
-          v-text="sharer.substring(0, 3)"
-        />
-      </div>
+        {{ sharer.substring(0, 3) }}
+      </button>
     </div>
     <div
       class="shares-control"
       style="justify-content: space-between"
     >
-      <div>Shared by {{ selectedSharer.length }} person</div>
+      <div>Shared by {{ selectedSharers.size }} person{{ selectedSharers.size !== 1 ? 's' : '' }}</div>
       <div>
         <button
           class="secondary ml-1"
-          @click="selectAll"
+          @click="selectAllSharers"
         >
           Select All
         </button>
         <button
           class="secondary ml-1"
-          @click="removeAll"
+          @click="removeAllSharers"
         >
           Remove All
         </button>
@@ -109,19 +112,19 @@
 
   <ExpenseTable
     :table-data="expenseRecords"
-    @delete="deleteExpense"
-    @delete-all="deleteAllExpense"
+    @delete="handleDeleteExpense"
+    @delete-all="handleDeleteAllExpenses"
   />
   <TransferTable
     :table-data="transferBook"
-    @mark="markPaid"
+    @mark="handleMarkPaid"
   />
 
   <div class="row">
     <button
       class="danger"
       style="flex: 1 1"
-      @click="clearData('delete')"
+      @click="handleClearData"
     >
       Delete
     </button>
@@ -135,139 +138,133 @@
 </template>
 
 <script setup>
-import ExpenseTable from "./components/ExpenseTable.vue";
-import TransferTable from "./components/TransferTable.vue";
-import { getLocalStorage, billSplitter } from "./util.js";
-import { ref, onMounted, computed } from "vue";
+import { ref, computed, onMounted } from 'vue';
+import ExpenseTable from './components/ExpenseTable.vue';
+import TransferTable from './components/TransferTable.vue';
+import { useBillSplitter } from './composables/useBillSplitter.js';
 
+// Use the composable for state management
+const {
+  sharers,
+  expenseRecords,
+  transferBook,
+  initializeFromStorage,
+  clearAllData,
+  addSharer,
+  removeSharer,
+  addExpense,
+  deleteExpense,
+  deleteAllExpenses,
+  toggleTransferPaid,
+} = useBillSplitter();
+
+// Local state
+const newSharer = ref('');
+const recordTitle = ref('');
 const amount = ref(0);
-const selectedSharer = ref([]);
-const transferBook = ref([]);
-const recordTitle = ref("");
-const newSharer = ref("");
-const paidBy = ref("");
-const sharers = ref([]);
-const expenseRecords = ref([]);
+const paidBy = ref('');
+const selectedSharers = ref(new Set());
 
-const clearData = type => {
-  const deleteText = `Are you sure? The cloud data will be deleted!`;
-  const newText = `Are you sure you? Remember to bookmark this page before you create a new one!`;
-  if (confirm(type === "new" ? newText : deleteText)) {
-    sharers.value = [];
-    expenseRecords.value = [];
-    transferBook.value = [];
-    selectedSharer.value = [];
-    localStorage.clear();
-  }
-};
-
-const saveData = () => {
-  localStorage.setItem("sharers", JSON.stringify(sharers.value));
-  localStorage.setItem("transferBook", JSON.stringify(transferBook.value));
-  localStorage.setItem("expenseRecords", JSON.stringify(expenseRecords.value));
-};
-const addSharer = () => {
-  if (sharers.value.includes(newSharer)) {
-    alert(`${newSharer.value} is already in the list`);
-    return;
-  }
-  sharers.value.push(newSharer.value);
-  selectedSharer.value.push(newSharer.value);
-  saveData();
-  newSharer.value = "";
-};
-
-const removeSharer = sharer => {
-  sharers.value = sharers.value.filter(item => item !== sharer);
-  selectedSharer.value = selectedSharer.value.filter(item => item !== sharer);
-  expenseRecords.value.forEach(record => {
-    record.names = record.names.filter(name => name !== sharer);
-  });
-  expenseRecords.value = expenseRecords.value.filter(
-    item => item.paidBy !== sharer
+// Computed: Check if expense form is valid
+const isExpenseFormValid = computed(() => {
+  return (
+    amount.value > 0 &&
+    recordTitle.value.trim() !== '' &&
+    paidBy.value !== '' &&
+    selectedSharers.value.size > 0
   );
-  splitBill();
-  saveData();
-};
+});
 
-const deleteExpense = index => {
-  expenseRecords.value.splice(index, 1);
-  splitBill();
-  saveData();
-};
+// Sharer handlers
+const handleAddSharer = () => {
+  const name = newSharer.value.trim();
+  if (!name) return;
 
-const addExpense = () => {
-  let record = {
-    title: recordTitle.value,
-    names: [...selectedSharer.value],
-    amount: amount.value,
-    paidBy: paidBy.value,
-  };
-  if (record.names.length === 0 || record.amount === null) {
-    alert("You need to select person or have amout");
-    return;
+  try {
+    addSharer(name);
+    selectedSharers.value.add(name);
+    newSharer.value = '';
+  } catch (error) {
+    alert(error.message);
   }
-  if (record.amount < 0) {
-    alert("Amount can't be negative");
-    return;
+};
+
+const handleRemoveSharer = (sharer) => {
+  selectedSharers.value.delete(sharer);
+  removeSharer(sharer);
+};
+
+// Expense handlers
+const handleAddExpense = () => {
+  if (!isExpenseFormValid.value) return;
+
+  try {
+    addExpense({
+      title: recordTitle.value.trim(),
+      names: Array.from(selectedSharers.value),
+      amount: amount.value,
+      paidBy: paidBy.value,
+    });
+
+    // Reset form
+    recordTitle.value = '';
+    amount.value = 0;
+    paidBy.value = '';
+    selectAllSharers();
+  } catch (error) {
+    alert(error.message);
   }
-  expenseRecords.value.push(record);
-  splitBill();
-  saveData();
-  recordTitle.value = "";
-  amount.value = "";
 };
-const chooseSharer = sharer => {
-  if (selectedSharer.value.includes(sharer)) {
-    selectedSharer.value = selectedSharer.value.filter(
-      selected => selected !== sharer
-    );
-    return selectedSharer;
+
+const handleDeleteExpense = (index) => {
+  deleteExpense(index);
+};
+
+const handleDeleteAllExpenses = () => {
+  deleteAllExpenses();
+};
+
+// Transfer handlers
+const handleMarkPaid = (index) => {
+  toggleTransferPaid(index);
+};
+
+// Sharer selection
+const toggleSharer = (sharer) => {
+  if (selectedSharers.value.has(sharer)) {
+    selectedSharers.value.delete(sharer);
+  } else {
+    selectedSharers.value.add(sharer);
   }
-  selectedSharer.value.push(sharer);
-};
-const selectAll = () => {
-  selectedSharer.value = [];
-  sharers.value.forEach(sharer => {
-    selectedSharer.value.push(sharer);
-  });
+  // Trigger reactivity
+  selectedSharers.value = new Set(selectedSharers.value);
 };
 
-const removeAll = () => {
-  selectedSharer.value = [];
+const selectAllSharers = () => {
+  selectedSharers.value = new Set(sharers.value);
 };
 
-const deleteAllExpense = () => {
-  expenseRecords.value = [];
-  splitBill();
-  saveData();
+const removeAllSharers = () => {
+  selectedSharers.value = new Set();
 };
 
-const sharerSelectorClass = sharer => {
-  const isSelected = selectedSharer.value.find(selected => selected === sharer);
-  return {
-    "sharer-selector": true,
-    "sharer-selector--selected": isSelected,
-  };
-};
-const markPaid = index => {
-  const selected = transferBook.value[index];
-  selected.paid = !selected.paid;
-};
-
-const splitBill = () => {
-  transferBook.value = billSplitter(sharers.value, expenseRecords.value);
+// Data management
+const handleClearData = () => {
+  const deleteText = 'Are you sure? The cloud data will be deleted!';
+  if (confirm(deleteText)) {
+    clearAllData();
+    selectedSharers.value = new Set();
+  }
 };
 
 const redirectToGitHub = () => {
-  window.open("https://github.com/ostoc/bill-splitter");
+  window.open('https://github.com/ostoc/bill-splitter');
 };
 
+// Initialize on mount
 onMounted(() => {
-  sharers.value = getLocalStorage("sharers");
-  selectedSharer.value = getLocalStorage("sharers");
-  expenseRecords.value = getLocalStorage("expenseRecords");
-  transferBook.value = getLocalStorage("transferBook");
-  splitBill();
+  initializeFromStorage();
+  // Initialize selected sharers with all sharers
+  selectAllSharers();
 });
 </script>

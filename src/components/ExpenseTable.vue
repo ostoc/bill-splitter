@@ -29,7 +29,7 @@
       </tr>
       <tr
         v-for="(data, index) in tableData"
-        :key="index"
+        :key="data.id ?? index"
       >
         <td class="title">
           {{ data.title }}
@@ -37,26 +37,31 @@
         <td>{{ data.paidBy }}</td>
         <td>
           <span
-            v-for="(name, index) in data.names"
-            :key="index"
+            v-for="(name, nameIndex) in data.names"
+            :key="name"
           >
-            <span v-text="name" />
-            <span
-              v-if="index < data.names.length - 1"
-              v-text="','"
-            />
+            <span>{{ name }}</span>
+            <span v-if="nameIndex < data.names.length - 1">,</span>
           </span>
         </td>
         <td align="right">
-          {{ formatedAmount(data.amount) }}
+          {{ formatAmount(data.amount) }}
         </td>
         <td class="action">
           <button
             class="secondary"
-            @click="deleteRow(index)"
+            @click="emit('delete', index)"
           >
             Delete
           </button>
+        </td>
+      </tr>
+      <tr v-if="tableData.length === 0">
+        <td
+          colspan="5"
+          class="no-data"
+        >
+          No expenses added yet
         </td>
       </tr>
       <tr>
@@ -64,18 +69,19 @@
           colspan="3"
           class="total"
         >
-          Total Spend: {{ formatedAmount(spendTotal) }}
+          Total Spend: {{ formatAmount(totalSpend) }}
         </td>
         <td
           colspan="2"
           class="action"
         >
           <button
-            v-if="tableData.length"
+            v-if="tableData.length > 0"
             class="secondary"
-            @click="deleteAll"
-            v-text="'Remove All'"
-          />
+            @click="emit('deleteAll')"
+          >
+            Remove All
+          </button>
         </td>
       </tr>
     </table>
@@ -83,27 +89,32 @@
 </template>
 
 <script setup>
-import { totalAmount, formatCurrency } from "../util.js";
-import { computed } from "vue";
-const emit = defineEmits(["delete", "deleteAll"]);
+import { computed } from 'vue';
+
+/**
+ * ExpenseTable Component
+ * Displays a table of expenses with total calculation
+ * Uses Vue 3 Composition API with <script setup>
+ */
+
 const props = defineProps({
   tableData: {
     type: Array,
-    default: null,
+    default: () => [],
+    required: true,
   },
 });
-const spendTotal = computed(() => {
-  return totalAmount(props.tableData);
-});
-const formatedAmount = amount => {
-  return formatCurrency(amount);
-};
 
-const deleteRow = index => {
-  emit("delete", index);
-};
-const deleteAll = () => {
-  emit("deleteAll");
+const emit = defineEmits(['delete', 'deleteAll']);
+
+// Computed: Calculate total spend
+const totalSpend = computed(() => {
+  return props.tableData.reduce((total, record) => total + record.amount, 0);
+});
+
+// Helper: Format amount to 2 decimal places
+const formatAmount = (amount) => {
+  return (Math.round(amount * 100) / 100).toFixed(2);
 };
 </script>
 
@@ -112,6 +123,7 @@ const deleteAll = () => {
   width: 100%;
   overflow-x: auto;
 }
+
 .expense-table {
   min-width: 600px;
   background: #d5ece8;
@@ -129,5 +141,16 @@ const deleteAll = () => {
 .header {
   font-size: 1.2rem;
   font-weight: 600;
+}
+
+.no-data {
+  text-align: center;
+  color: #888;
+  padding: 2rem;
+}
+
+.total {
+  font-weight: 600;
+  padding: 0.5rem;
 }
 </style>
